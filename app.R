@@ -23,7 +23,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
         # Show a plot of the generated distribution
         mainPanel(
           tabsetPanel(
-            tabPanel("Info", print("plot")),
+            tabPanel("Info", fluidRow(print("This app was created by Chloe, Caitlin, and Eleanor from MESM 2024. It was a long, difficult journey, but by the end, we finally figured out how to make multiple tabs and populate them. It's not about the destination but about the Shiny apps you make along the way. Peace.")
+                                      )),
             tabPanel("Land Cover Map", verbatimTextOutput("summary")),
             tabPanel("Land Transformations", tableOutput("table"))
           )
