@@ -6,6 +6,8 @@ library(bslib) ### Custom themes. Run command bs_theme_preview() in console.
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage("Land Use Carbon Stock & Conversion"),
 
+# Can you see this, Eleanor?
+                
     # Application title
     
 
