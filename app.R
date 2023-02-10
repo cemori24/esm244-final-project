@@ -6,27 +6,31 @@ library(bslib) ### Custom themes. Run command bs_theme_preview() in console.
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage("Land Use Carbon Stock & Conversion"),
 
-# Can you see this, Eleanor?
                 
     # Application title
     
 
     # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
+    #sidebarLayout(
+       # sidebarPanel(
+           # sliderInput("bins",
+                      #  "Number of bins:",
+                       # min = 1,
+                      #  max = 50,
+                       # value = 30)
+        #),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+          tabsetPanel(
+            tabPanel("Info", print("plot")),
+            tabPanel("Land Cover Map", verbatimTextOutput("summary")),
+            tabPanel("Land Transformations", tableOutput("table"))
+          )
         )
-    )
-)
+   )
+#)
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
