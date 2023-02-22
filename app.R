@@ -44,10 +44,23 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
             
             
             
-            
-            
-            tabPanel("Land Cover Map", 
-                     verbatimTextOutput("summary")),
+    tabPanel("Land Cover Map", 
+             imageOutput("map_img"),
+             br(),
+             hr(),
+             h4(strong("Land Cover Shapefile Visualization")),
+             p(style="text-align: justify; font-size = 25px",
+               "Eventually, this page will display an interactive 
+                       map that visualizes the carbon storage data. There will
+                       likely be a color scale, with green representing a lot 
+                       of stored carbon and red representing little to none. Alternatively, 
+                       the color scale would represent potential for carbon storage."),
+             
+             tags$blockquote("This Shiny app is still under continuous development. 
+           Please look forward to future updates!"),
+           hr(),
+           
+           verbatimTextOutput("summary")),
             
             
             
@@ -74,6 +87,15 @@ server <- function(input, output) {
         hist(x, breaks = bins, col = 'darkgray', border = 'white',
              xlab = 'Waiting time to next eruption (in mins)',
              main = 'Histogram of waiting times')
+        
+        
+    output$map_img <- renderImage({
+      
+      list(src = "WWW/New_York_map.jpeg",
+           width = "100%",
+           height = '100%')
+      
+    }, deleteFile = F)
     })
 }
 
