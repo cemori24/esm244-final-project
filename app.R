@@ -70,9 +70,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
             
             
             tabPanel("Land Transformations", 
-                     tableOutput("table"),
-                     br(),
-                     hr(),
+                     
                      h4(strong("Chart of Carbon Storage Options")),
                      
                      p(""),
