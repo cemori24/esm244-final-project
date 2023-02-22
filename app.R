@@ -9,41 +9,28 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                   
                   tabPanel(
                     'Info',
-                    
-    # Application title
-    
-
-    # Sidebar with a slider input for number of bins 
-    #sidebarLayout(
-       # sidebarPanel(
-           # sliderInput("bins",
-                      #  "Number of bins:",
-                       # min = 1,
-                      #  max = 50,
-                       # value = 30)
-        #),
-
-        # Show a plot of the generated distribution
-    
-        #mainPanel(
-         # tabsetPanel(
-           # tabPanel("Info", 
-                     fluidRow(""),
-                     fluidRow(h5("This app was created by Chloe, Caitlin, and Eleanor from MESM 2024. It was a long, difficult journey, but by the end, we finally figured out how to make multiple tabs and populate them. It's not about the destination but about the Shiny apps you make along the way. Peace.")
+                    fluidRow(""),
+                     fluidRow(h5("This App will allow users to upload a shapefile with landuse data for an area, and in return will be shown how much cabon is stored in various land uses, and how their carbon storage potential would change by changing land type.")
                                       ),
                      fluidPage(
-                       
-                       # Copy the line below to make a file upload manager
-                       fileInput("file", label = h3("Upload Shapefile (.shp)")),
                        
                        hr(),
                        fluidRow(column(4, verbatimTextOutput("value"))),
                        fluidRow(h6("Citation please."))
                        
-                     )),
-            
-            
-            
+                     ),
+                    sidebarLayout(
+                      sidebarPanel(
+                        fileInput("file", label = h3("Upload Shapefile (.shp)"))
+                        ), #end sidebar panel
+                    
+                    mainPanel(
+                      plotOutput('load_pic_plot', height = '600px'), # i dont know what this code does but r wanted me to have something for main panel
+                      textOutput('pic_dim_print')
+                    ) #end main panel
+                  ) #end sidebar layout
+                     
+                  ), #end info tab panel
             
             
             tabPanel("Land Cover Map", 
@@ -58,7 +45,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      tableOutput("table"))
           )
         )
-  # )
+   #)
 #)
 
 
