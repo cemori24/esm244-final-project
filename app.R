@@ -29,8 +29,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
          # tabsetPanel(
            # tabPanel("Info", 
                      fluidRow(""),
-                     fluidRow(h5("This app was created by Chloe, Caitlin, and Eleanor from MESM 2024. It was a long, difficult journey, but by the end, we finally figured out how to make multiple tabs and populate them. It's not about the destination but about the Shiny apps you make along the way. Peace.")
-                                      ),
+                     fluidRow(h4(strong("App Description"))), 
+                     p("This app will help users understand the current carbon storage of rural geographic regions
+                                 and explore options to increase carbon storage. On this tab, the user will upload a shapefile
+                                 corresponding to a geographic region. The app will use the geographic data plus public domain
+                                 carbon storage data to generate a map on tab 2 that displays current land use and approximate carbon storage of the
+                                 region. On tab 3, the user will be able to explore options for land transformation that could
+                                 increase the region's carbon storage."),
                      fluidPage(
                        
                        # Copy the line below to make a file upload manager
@@ -38,24 +43,31 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                        
                        hr(),
                        fluidRow(column(4, verbatimTextOutput("value"))),
-                       fluidRow(h6("Citation please."))
-                       
-                     )),
+
+                     ),
+                     tags$blockquote("This Shiny app is still under continuous development. 
+                                     Please look forward to future updates!"),
+    hr()
+    ),
             
             
             
     tabPanel("Land Cover Map", 
-             imageOutput("map_img"),
-             br(),
-             hr(),
+             #imageOutput("map_img"),
+             #br(),
+             #hr(),
              h4(strong("Land Cover Shapefile Visualization")),
              p(style="text-align: justify; font-size = 25px",
-               "Eventually, this page will display an interactive 
-                       map that visualizes the carbon storage data. There will
-                       likely be a color scale, with green representing a lot 
-                       of stored carbon and red representing little to none. Alternatively, 
-                       the color scale would represent potential for carbon storage."),
+               "Eventually, this tab will display an interactive 
+                       map that visualizes the current land use and carbon storage data. There will
+                       likely be a color scale, with green representing areas with a lot 
+                       of stored carbon and red representing areas with little to no carbon storage.  
+                       Alternatively, the color scale would represent potential for carbon storage."),
              
+             img(src = 'New_York_map.jpeg', height = 500),
+             
+             br(),
+             hr(),
              tags$blockquote("This Shiny app is still under continuous development. 
            Please look forward to future updates!"),
            hr(),
@@ -68,7 +80,58 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
             
             
             tabPanel("Land Transformations", 
-                     tableOutput("table"))
+                     tableOutput("table"),
+                     br(),
+                     hr(),
+                     h4(strong("Chart of Carbon Storage Options")),
+                     
+                     p(""),
+                     p(style="text-align: justify: font-size = 25px",
+                       "This tab will display a bar chart showing areas of low, medium, and high carbon
+                       storage as a percentage of the mapped region. Below the chart, the user will be able to
+                       choose a land transformation from a dropdown menu and input an area to be transformed.
+                       For example, the user can select 'Wetland to Forest' and input 100 sq. kilometers.
+                       The chart will update automatically, showing the new %s and difference from the original in
+                       a shaded region of each bar in the chart. This functionality will help the user to gain 
+                       insight into potential land transformations that could increase carbon storage within the
+                       mapped region."),
+
+                     img(src = 'Carbon-storage-by-ecosystem.png', height = 300),
+                     
+                     p("Image source: https://www.fs.usda.gov/ccrc/sites/default/files/2021-06/Carbon-storage-by-ecosystem.png"),
+                     
+                     selectInput("select", label = h3("Transform FROM:"), 
+                                 choices = list("Grassland" = 1, "Forest" = 2, "Wetland" = 3), 
+                                 selected = 1),
+                     
+                     selectInput("select", label = h3("Transform TO:"), 
+                                 choices = list("Grassland" = 1, "Forest" = 2, "Wetland" = 3), 
+                                 selected = 1),
+                     
+                     numericInput("num", label = h3("Area of Transformation:"), value = 1),
+                     
+                     br(),
+                     hr(),
+                     
+                     h4(strong("Download All Data")),
+                     p("Here, the user will also be able to download the data corresponding to the chart above, as
+                       modified using the above widgets. The download format would be a spreadsheet showing the post-transformation
+                       land use types, area (sq km), carbon storage (kg CO2e), and carbon storage (% of total) 
+                       within the mapped region. We may also include other data types such as delta area or delta carbon storage 
+                       compared to the original map or cost of the specified land transformation(s).
+                       This functionality would be useful to a user who, for instance, intends to produce a report
+                       on the most effective land transformations to increase carbon storage within the mapped region."),
+                     
+                     actionButton("action", label = "Download Carbon Storage Data"),
+                     
+                     
+                     br(),
+                     hr(),
+                     
+                     tags$blockquote("This Shiny app is still under continuous development. 
+                                     Please look forward to future updates!"),
+                     
+                     hr()),
           )
         )
   # )
