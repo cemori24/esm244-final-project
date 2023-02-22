@@ -9,10 +9,35 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                   
                   tabPanel(
                     'Info',
+                    fluidRow(""),
+                    fluidRow(h5("This App will allow users to upload a shapefile 
+                                with landuse data for an area, and in return will 
+                                be shown how much cabon is stored in various 
+                                land uses, and how their carbon storage potential 
+                                would change by changing land type.")
+                    ),
+                    fluidPage(
+                      
+                      hr(),
+                      fluidRow(column(4, verbatimTextOutput("value"))),
+                      fluidRow(h6("Citation please."))
+                      
+                    ),
+                    sidebarLayout(
+                      sidebarPanel(
+                        fileInput("file", label = h3("Upload Shapefile (.shp)"))
+                      ), #end sidebar panel
+                      
+                      mainPanel(
+                        plotOutput('load_pic_plot', height = '600px'), # i dont know what this code does but r wanted me to have something for main panel
+                        textOutput('pic_dim_print')
+                      ) #end main panel
+                    ) #end sidebar layout
                     
 
-    ),
-            
+                  ), #end info tab panel
+                  
+
             
             
     tabPanel("Land Cover Map", 
@@ -35,7 +60,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
            Please look forward to future updates!"),
            hr(),
            
-           verbatimTextOutput("summary")),
+           verbatimTextOutput("summary")
+           ),
+#>>>>>>> 6c58eede2c433dc40a4ee301e34d8e831839a87f
             
             
             
@@ -97,7 +124,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      hr()),
           )
         )
-  # )
+   #)
 #)
 
 
