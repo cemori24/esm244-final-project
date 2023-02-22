@@ -10,44 +10,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                   tabPanel(
                     'Info',
                     
-    # Application title
-    
 
-    # Sidebar with a slider input for number of bins 
-    #sidebarLayout(
-       # sidebarPanel(
-           # sliderInput("bins",
-                      #  "Number of bins:",
-                       # min = 1,
-                      #  max = 50,
-                       # value = 30)
-        #),
-
-        # Show a plot of the generated distribution
-    
-        #mainPanel(
-         # tabsetPanel(
-           # tabPanel("Info", 
-                     fluidRow(""),
-                     fluidRow(h4(strong("App Description"))), 
-                     p("This app will help users understand the current carbon storage of rural geographic regions
-                                 and explore options to increase carbon storage. On this tab, the user will upload a shapefile
-                                 corresponding to a geographic region. The app will use the geographic data plus public domain
-                                 carbon storage data to generate a map on tab 2 that displays current land use and approximate carbon storage of the
-                                 region. On tab 3, the user will be able to explore options for land transformation that could
-                                 increase the region's carbon storage."),
-                     fluidPage(
-                       
-                       # Copy the line below to make a file upload manager
-                       fileInput("file", label = h3("Upload Shapefile (.shp)")),
-                       
-                       hr(),
-                       fluidRow(column(4, verbatimTextOutput("value"))),
-
-                     ),
-                     tags$blockquote("This Shiny app is still under continuous development. 
-                                     Please look forward to future updates!"),
-    hr()
     ),
             
             
