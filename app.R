@@ -4,9 +4,12 @@ library(bslib) ### Custom themes. Run command bs_theme_preview() in console.
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
-                navbarPage("Land Use Carbon Stock & Conversion"),
-
-                
+                navbarPage(
+                  "Land Use Carbon Stock & Conversion",
+                  
+                  tabPanel(
+                    'Info',
+                    
     # Application title
     
 
@@ -21,9 +24,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
         #),
 
         # Show a plot of the generated distribution
-        mainPanel(
-          tabsetPanel(
-            tabPanel("Info", fluidRow(""),
+    
+        #mainPanel(
+         # tabsetPanel(
+           # tabPanel("Info", 
+                     fluidRow(""),
                      fluidRow(h5("This app was created by Chloe, Caitlin, and Eleanor from MESM 2024. It was a long, difficult journey, but by the end, we finally figured out how to make multiple tabs and populate them. It's not about the destination but about the Shiny apps you make along the way. Peace.")
                                       ),
                      fluidPage(
@@ -41,17 +46,19 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
             
             
             
-            tabPanel("Land Cover Map", verbatimTextOutput("summary")),
+            tabPanel("Land Cover Map", 
+                     verbatimTextOutput("summary")),
             
             
             
             
             
             
-            tabPanel("Land Transformations", tableOutput("table"))
+            tabPanel("Land Transformations", 
+                     tableOutput("table"))
           )
         )
-   )
+  # )
 #)
 
 
