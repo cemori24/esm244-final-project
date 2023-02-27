@@ -1,0 +1,44 @@
+---
+title: "Testing"
+author: "E.M.Thomas"
+date: "2023-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(raster)
+library(here)
+library(sf)
+library(tidyverse)
+```
+```{r}
+adf1 <- raster(here("nlcd_data/ny_nlcd2019/w001001.adf"))
+plot(adf1)
+
+metadata <- XML::xmlToDataFrame(here("nlcd_data/ny_nlcd2019/metadata.xml"))
+
+nypa_facilties <- read_sf(here("nypa_landholdings/NYPA_Facilities.shp")) %>% 
+  janitor::clean_names()
+
+plot(nypa_facilties$geometry)
+              
+```
+```{r}
+st_crs(nypa_facilties) <- 9001
+
+
+st_crs(adf1)
+st_crs(nypa_facilties)
+ 
+
+
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = as.data.frame(adf1)) + 
+  geom_sf(data = as.data.frame(nypa_facilties)) +
+  theme_void()
+```
+
