@@ -63,7 +63,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
            verbatimTextOutput("summary")
            ),
 #>>>>>>> 6c58eede2c433dc40a4ee301e34d8e831839a87f
-            
+#writing something for caitlin            
             
             
             
