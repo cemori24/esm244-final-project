@@ -12,6 +12,8 @@ library(here)
 library(sf)
 library(tidyverse)
 ```
+
+
 ```{r}
 adf1 <- raster(here("nlcd_data/ny_nlcd2019/w001001.adf"))
 plot(adf1)
