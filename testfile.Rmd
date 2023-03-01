@@ -59,6 +59,7 @@ ls_1_rast <- ls_rast[[1]]
 plot(ls_1_rast, main = 'LandSat band 1', 
      col = hcl.colors(20), axes = FALSE)
 ```
+
 ```{r}
 landsat_file1 <- here("nlcd_data", "ny_nlcd2019", "prj.adf")
 
@@ -82,13 +83,18 @@ plot1 <- ggplot() +
 
 
 ```{r}
-landsat_file1 <- here("nlcd_us", "ny_nlcd2019", "prj.adf")
+landsat_file2 <- here("nlcd_us", "clipped_NY.tif")
 
-ls_rast1 <- terra::rast(landsat_file1)
-ls_rast1
+ls_rast2 <- terra::rast(landsat_file2)
+ls_rast2
 ```
 
 
+```{r}
+ls_1_rast2 <- ls_rast2[[1]]
+plot(ls_1_rast2, main = 'LandSat band 1', 
+     col = hcl.colors(20), axes = FALSE)
+```
 
 
 
