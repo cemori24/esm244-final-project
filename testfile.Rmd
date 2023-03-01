@@ -59,8 +59,7 @@ lc_rast
 ```{r}
 lc_1_rast <- lc_rast[[1]]
 plot(lc_1_rast, main = 'US Landcover Map', 
-     col = hcl.colors(20), axes = FALSE,
-     ny_vector, add = TRUE))
+     col = hcl.colors(20), axes = FALSE)
 ```
 
 ```{r}
