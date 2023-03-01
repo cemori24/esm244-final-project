@@ -62,17 +62,6 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
            
            verbatimTextOutput("summary")
            ),
-<<<<<<< HEAD
-#>>>>>>> 6c58eede2c433dc40a4ee301e34d8e831839a87f
-         
-=======
-
-<<<<<<< HEAD
->>>>>>> 2cd52453fc3f974260763362487af0ea4621c91f
-            
-=======
-## sharknado            
->>>>>>> 2ed94eaab4def12f40b464055344ffed8e44545d
             
             
             
