@@ -11,7 +11,11 @@ library(raster)
 library(here)
 library(sf)
 library(tidyverse)
+library(terra) ### raster data functionality
+library(tmap)
 ```
+
+
 ```{r}
 adf1 <- raster(here("nlcd_data/ny_nlcd2019/w001001.adf"))
 plot(adf1)
@@ -41,4 +45,59 @@ ggplot() +
   geom_sf(data = as.data.frame(nypa_facilties)) +
   theme_void()
 ```
+
+
+```{r}
+landsat_file <- here("nlcd_us", "nlcd_2019_land_cover_l48_20210604.img")
+
+ls_rast <- terra::rast(landsat_file)
+ls_rast
+```
+
+```{r}
+ls_1_rast <- ls_rast[[1]]
+plot(ls_1_rast, main = 'LandSat band 1', 
+     col = hcl.colors(20), axes = FALSE)
+```
+
+```{r}
+landsat_file1 <- here("nlcd_data", "ny_nlcd2019", "prj.adf")
+
+ls_rast1 <- terra::rast(landsat_file1)
+ls_rast1
+```
+
+
+```{r}
+ls_1_rast1 <- ls_rast1[[1]]
+plot(ls_1_rast1, main = 'LandSat band 1', 
+     col = hcl.colors(20), axes = FALSE)
+```
+
+
+
+```{r}
+plot1 <- ggplot() +
+  geom_raster(data =ls_1_rast1)
+```
+
+
+```{r}
+landsat_file2 <- here("nlcd_us", "clipped_NY.tif")
+
+ls_rast2 <- terra::rast(landsat_file2)
+ls_rast2
+```
+
+
+```{r}
+ls_1_rast2 <- ls_rast2[[1]]
+plot(ls_1_rast2, main = 'LandSat band 1', 
+     col = hcl.colors(20), axes = FALSE)
+```
+
+
+
+
+
 
