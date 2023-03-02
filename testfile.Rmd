@@ -156,7 +156,18 @@ plot(crop_extent, add = TRUE)
 
 
 
+```{r}
+hawaii_file <- here("nlcd_data", "hawaii_2001", "hi_landcover_wimperv_9-30-08_se5.img")
 
+hawaii_rast <- terra::rast(hawaii_file)
+hawaii_rast
+```
+
+```{r}
+hawaii_1_rast <- hawaii_rast[[1]]
+plot(hawaii_1_rast, main = 'hawaii Landcover Map', 
+     col = hcl.colors(20), axes = FALSE)
+```
 
 
 
