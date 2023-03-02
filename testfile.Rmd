@@ -13,6 +13,8 @@ library(sf)
 library(tidyverse)
 library(terra) ### raster data functionality
 library(tmap)
+library(rgdal)
+library(stars)
 ```
 
 
@@ -48,53 +50,113 @@ ggplot() +
 
 
 ```{r}
-landsat_file <- here("nlcd_us", "nlcd_2019_land_cover_l48_20210604.img")
+land_cover_file <- here("nlcd_us", "nlcd_2019_land_cover_l48_20210604.img")
 
-ls_rast <- terra::rast(landsat_file)
-ls_rast
+lc_rast <- terra::rast(land_cover_file)
+lc_rast
 ```
 
 ```{r}
-ls_1_rast <- ls_rast[[1]]
-plot(ls_1_rast, main = 'LandSat band 1', 
+lc_1_rast <- lc_rast[[1]]
+plot(lc_1_rast, main = 'US Landcover Map', 
      col = hcl.colors(20), axes = FALSE)
 ```
 
 ```{r}
-landsat_file1 <- here("nlcd_data", "ny_nlcd2019", "prj.adf")
+arturo_clip_file <- here("nlcd_data", "ny_nlcd2019", "prj.adf")
 
-ls_rast1 <- terra::rast(landsat_file1)
-ls_rast1
+aclip_rast <- terra::rast(arturo_clip_file)
+aclip_rast
 ```
 
 
 ```{r}
-ls_1_rast1 <- ls_rast1[[1]]
-plot(ls_1_rast1, main = 'LandSat band 1', 
+aclip_1_rast <- aclip_rast[[1]]
+plot(aclip_1_rast, main = 'Arturo NY Clip', 
      col = hcl.colors(20), axes = FALSE)
 ```
 
 
-
 ```{r}
-plot1 <- ggplot() +
-  geom_raster(data =ls_1_rast1)
+cclip_file <- here("nlcd_us", "clipped_NY.tif")
+
+cclip_rast <- terra::rast(cclip_file)
+cclip_rast
 ```
 
 
 ```{r}
-landsat_file2 <- here("nlcd_us", "clipped_NY.tif")
-
-ls_rast2 <- terra::rast(landsat_file2)
-ls_rast2
-```
-
-
-```{r}
-ls_1_rast2 <- ls_rast2[[1]]
-plot(ls_1_rast2, main = 'LandSat band 1', 
+cclip_1_rast <- cclip_rast[[1]]
+plot(cclip_1_rast, main = 'Chloe Clip Map', 
      col = hcl.colors(20), axes = FALSE)
 ```
+
+  
+```{r}
+ny_vector <- read_sf(here("nlcd_us","NY_state.gpkg")) %>% 
+  select(geom)
+plot(ny_vector)
+```
+
+###attempting to rasterize NY vector 
+```{r}
+ny_rast <- st_rasterize(ny_vector, lc_rast)
+```
+
+```{r}
+ny_rast_2 <- rasterize(ny_vector, aclip_rast)
+```
+
+
+```{r}
+plot(ny_rast_2)
+```
+
+
+
+
+### making lc_rast a df
+```{r}
+us_df <- as.data.frame(lc_1_rast, xy = TRUE)
+```
+
+## trying to crop lc by ny 
+```{r}
+landtype_crop1 <- crop(lc_rast, ny_vector)
+
+plot(landtype_crop, main = "Cropped lidar")
+```
+
+## trying to crop lc_rast by ny_vector
+```{r}
+landtype_crop <- crop(lc_rast, ny_rast_2)
+
+plot(landtype_crop, main = "Cropped lidar")
+
+```
+
+
+```{r}
+ggplot() +
+  geom_raster(data = lc_1_rast, aes(x = x, y = y)) + 
+  geom_sf(data = ny_vector, color = "blue", fill = NA) +
+  coord_sf()
+```
+
+###dont run this 
+```{r}
+#plot_2<- plot(lc_1_rast, main = 'US Landcover Map', 
+     #col = hcl.colors(20), axes = FALSE,
+    # ny_vector, add = TRUE)
+```
+
+# add shapefile on top of the existing raster
+plot(crop_extent, add = TRUE)
+
+
+
+
+
 
 
 
