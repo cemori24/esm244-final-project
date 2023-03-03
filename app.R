@@ -17,8 +17,9 @@ library(ggplot2)
 ### Data Files
 lc_rast <- here("nlcd_data",
                 "lc_rast_coarse.tif") %>% 
-  terra::rast() %>% 
-  as.data.frame(xy = TRUE)
+  terra::rast()
+
+lc_rast_df <- as.data.frame(lc_rast, xy = TRUE)
 
 roi_vec <- read_sf(here("nlcd_data",
                         "hawaii_2001", 
@@ -36,7 +37,7 @@ carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hecta
 class_names <- read_xlsx(here("carbon_stock_cfs", "class_descriptions_key.xlsx")) %>% 
   clean_names()
 
-roi_area <- lc_rast %>% 
+roi_area <- lc_rast_df %>% 
   clean_names() %>%
   group_by(land_cover_class) %>%
   tally(name = "area_hectares") %>% 
@@ -197,7 +198,10 @@ server <- function(input, output) {
     #       height = '100%')
       
     #}, deleteFile = F)
-    }
+  
+    
+  
+  }
 
 
 ### Run App
