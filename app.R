@@ -13,7 +13,7 @@ library(dplyr)
 library(janitor)
 library(readxl)
 library(ggplot2)
-library
+library(knitr)
 
 ### Data Files
 lc_rast <- here("nlcd_data",
@@ -143,7 +143,6 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 
                      plotOutput("carbon_plot"),
                      
-                     tableOutput("carbon_table"),
                      
                      
                      
@@ -253,6 +252,8 @@ server <- function(input, output) {
              title = "Carbon Storage Per Land Use Type in Hawaii", 
              fill = "Compartment")
     })
+    
+    output$carbon_table_test <- renderTable({roi_carbon_table})
     
     output$carbon_table <- function() {
       knitr::kable(roi_carbon_table, 
