@@ -58,6 +58,20 @@ roi_carbon_table <- roi_carbon_table[, c("land_cover_class",
                                          "soc", 
                                          "dead_matter", 
                                          "litter")]
+color_map = c("NA" = "lightblue", 
+              "Open Water" = "blue", 
+              "Developed, Open Space" = "lightpink", 
+              "Developed, Low Intensity" = "coral1", 
+              "Developed, Medium Intensity" = "red", 
+              "Developed, High Intensity" = "darkred", 
+              "Barren Land (Rock/Sand/Clay)" = "tan", 
+              "Evergreen Forest" = "darkgreen", 
+              "Shrub/Scrub" = "darkgoldenrod3", 
+              "Grassland/Herbaceous" = "darkkhaki", 
+              "Pasture/Hay" = "khaki1", 
+              "Cultivated Crops" = "brown", 
+              "Woody Wetlands" = "lightcyan", 
+              "Emergent Herbaceous Wetlands" = "lightseagreen")
 
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
@@ -223,7 +237,7 @@ server <- function(input, output) {
     output$testplot <- renderPlot({
       ggplot() +
         geom_col(data = roi_area, mapping = aes(x = land_cover_class, y = area_hectares))
-    })
+    }) #end of testplot
     
     output$carbon_chart <- renderPlot({
       ggplot() +
@@ -247,9 +261,19 @@ server <- function(input, output) {
              y = "Carbon (log tons)", 
              title = "Carbon Storage Per Land Use Type in Hawaii", 
              fill = "Compartment")
-    })
+    }) #end of carbon chart
   
-  }
+    ### piechart
+    output$carbon_chart <- renderPlot({
+      ggplot(roi_area, aes(x = "", y = area_hectares, fill = Description)) +
+        geom_bar(width = 1, stat = "identity", color='black', size=.3) +
+        coord_polar("y", start = 0) +
+        scale_fill_manual(values = color_map) + # Use the color_map vector to specify colors
+        theme_void() + 
+        theme(legend.position = "right") +
+        labs(fill = "Land Use Cover", title = "Land Use Cover Percentage")
+  
+      }) #end of piechart
 
 
 ### Run App
