@@ -147,10 +147,10 @@ server <- function(input, output) {
   nlcd_file <- here("nlcd_data", 
                       "hawaii_2001", "hi_landcover_wimperv_9-30-08_se5.img")
   ### rasterize land cover data
-  nlcd_rast <- terra::rast(nlce_file)
+  nlcd_rast <- terra::rast(nlcd_file)
   
   ### make nlcd_rast more coarse ie smaller
-  nlcd_coarse <- aggregate(nlce_rast, fact=4, fun=modal)
+  nlcd_coarse <- aggregate(nlcd_rast, fact=4, fun=modal)
   
   ### convert nlcd_coarse to data frame for pie chart 
   nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
