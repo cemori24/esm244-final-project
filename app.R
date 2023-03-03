@@ -43,6 +43,22 @@ roi_area <- lc_rast_df %>%
   tally(name = "area_hectares") %>% 
   merge(., class_names, by.x = "land_cover_class", by.y = "class")
 
+roi_carb_per_area <- merge(roi_area, carbon_tph, 
+                           by.x = "land_cover_class", by.y = "class") %>% 
+  mutate(total_carbon_log_tons = log(area_hectares * ton_c_per_hectare))
+
+roi_carbon_table <- roi_carb_per_area %>% 
+  select(land_cover_class, area_hectares, description, compartment, total_carbon_tons_log) %>% 
+  pivot_wider(names_from = "compartment", values_from = "total_carbon_tons_log")
+roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
+                                         "description", 
+                                         "area_hectares", 
+                                         "above", 
+                                         "below", 
+                                         "soc", 
+                                         "dead_matter", 
+                                         "litter")]
+
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage(
@@ -124,7 +140,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                        insight into potential land transformations that could increase carbon storage within the
                        mapped region."),
 
-                     img(src = 'Carbon-storage-by-ecosystem.png', height = 300),
+                     plotOutput("carbon_chart"),
                      
                      p("Image source: https://www.fs.usda.gov/ccrc/sites/default/files/2021-06/Carbon-storage-by-ecosystem.png"),
                      
@@ -153,6 +169,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      actionButton("action", label = "Download Carbon Storage Data"),
                      
                      plotOutput("testplot"),
+                     
                      
                      
                      br(),
@@ -204,6 +221,30 @@ server <- function(input, output) {
     output$testplot <- renderPlot({
       ggplot() +
         geom_col(data = roi_area, mapping = aes(x = land_cover_class, y = area_hectares))
+    })
+    
+    output$carbon_chart <- renderPlot({
+      ggplot() +
+        geom_col(data = roi_carb_per_area, 
+                 mapping = aes(x = description, 
+                               y = total_carbon_log_tons, 
+                               fill = compartment
+                 )) +
+        scale_fill_manual(values = c("plum2", "slateblue1", "palegreen1", "lightgoldenrod1", "tan1"), 
+                          labels = c(above = "Above Ground", 
+                                     below = "Below Ground", 
+                                     dead_matter = "Dead Matter", 
+                                     litter = "Litter", 
+                                     soc = "Soil Organic Carbon"
+                          )) +
+        theme(axis.text.x = element_text(angle = 45, 
+                                         vjust = 1, 
+                                         hjust=1
+        )) +
+        labs(x = "", 
+             y = "Carbon (log tons)", 
+             title = "Carbon Storage Per Land Use Type in Hawaii", 
+             fill = "Compartment")
     })
   
   }
