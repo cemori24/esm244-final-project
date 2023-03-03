@@ -15,6 +15,31 @@ library(readxl)
 library(ggplot2)
 
 ### Data Files
+lc_rast <- here("nlcd_data",
+                "lc_rast_coarse.tif") %>% 
+  terra::rast() %>% 
+  as.data.frame(xy = TRUE)
+
+roi_vec <- read_sf(here("nlcd_data",
+                        "hawaii_2001", 
+                        "parks_state",
+                        "parks_state.shp"))
+
+carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hectare.xlsx")) %>% 
+  clean_names() %>% 
+  select(class:soc) %>% 
+  pivot_longer(cols = above:soc, 
+               names_to = "compartment", 
+               values_to = "ton_c_per_hectare")
+
+class_names <- read_xlsx(here("carbon_stock_cfs", "class_descriptions_key.xlsx")) %>% 
+  clean_names()
+
+roi_area <- lc_rast %>% 
+  clean_names() %>%
+  group_by(land_cover_class) %>%
+  tally(name = "area_hectares") %>% 
+  merge(., class_names, by.x = "land_cover_class", by.y = "class")
 
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
@@ -143,30 +168,15 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 ### Server Block
 server <- function(input, output) {
 
-  ### load national land cover data (nlcd)
-  nlcd_file <- here("nlcd_data", 
-                      "hawaii_2001", "hi_landcover_wimperv_9-30-08_se5.img")
-  ### rasterize land cover data
-  nlcd_rast <- terra::rast(nlcd_file)
-  
-  ### make nlcd_rast more coarse ie smaller
-  nlcd_coarse <- aggregate(nlcd_rast, fact=4, fun=modal)
-  
-  ### convert nlcd_coarse to data frame for pie chart 
-  nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
-    filter(`Land Cover Class` != 0) #filter out the 0 no data values
-  
-  ### load Hawaii National Parks Data
-  roi_vec <- read_sf(here("nlcd_data","hawaii_2001", "parks_state","parks_state.shp")) 
   
  # tmap_mode("view") +
   # tmap_options(check.and.fix = TRUE) +
-  output$base_map <-  tm_shape(nlcd_coarse) +
-    tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
-              labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
-                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
-    tm_shape(roi_vec) +
-    tm_borders(col = "black", lwd = 2)
+  #output$base_map <-  tm_shape(nlcd_coarse) +
+   # tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
+    #          labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
+     #                    "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
+    #tm_shape(roi_vec) +
+    #tm_borders(col = "black", lwd = 2)
   
     # output$distPlot <- renderPlot({
     #     # generate bins based on input$bins from ui.R
@@ -179,13 +189,13 @@ server <- function(input, output) {
     #          main = 'Histogram of waiting times')
     #     
         
-    output$map_img <- renderImage({
+   # output$map_img <- renderImage({
       
-      list(src = "WWW/New_York_map.jpeg",
-           width = "100%",
-           height = '100%')
+  #    list(src = "WWW/New_York_map.jpeg",
+   #        width = "100%",
+    #       height = '100%')
       
-    }, deleteFile = F)
+    #}, deleteFile = F)
     }
 
 
