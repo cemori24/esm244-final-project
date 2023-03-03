@@ -28,10 +28,10 @@ hawaii_file <- here("nlcd_data", "hawaii_2001", "hi_landcover_wimperv_9-30-08_se
 hawaii_rast <- terra::rast(hawaii_file)
 
 #plot hawaii raster
-plot(hawaii_1_rast, main = 'hawaii Landcover Map', axes = FALSE)
+plot(hawaii_rast, main = 'hawaii Landcover Map', axes = FALSE)
 ```
 
-
+# these will come from elsewhere in the app 
 ```{r}
 #make the hawaii raster file smaller 
 hawaii_coarse <- aggregate(hawaii_rast, fact=4, fun=modal)
@@ -47,7 +47,7 @@ hawaii_df <- as.data.frame(hawaii_coarse, xy = TRUE) %>%
 ```
 
 
-
+# dont need this anymore
 ```{r}
 #summarize by land cover percentage for pie chart  
 land_use_summary <- hawaii_df %>%
@@ -56,12 +56,46 @@ land_use_summary <- hawaii_df %>%
   mutate(percent = count / sum(count) * 100)
 ```
 
+# add class descriptions to class_areas file
 ```{r}
-ggplot(land_use_summary, aes(x = "", y = percent, fill = `Land Cover Class`)) +
-  geom_bar(width = 1, stat = "identity") +
+### read in class descriptions xlsx
+class_descriptions <- readxl::read_xlsx(here('carbon_stock_cfs/class_descriptions_key.xlsx')) %>% 
+  rename(land_cover_class=Class)
+
+### replace land area numeric identifiers with class description
+roi_area <- merge(hawaii_class_areas, class_descriptions)
+
+```
+
+
+
+# perfect the pie chart!!!!!
+
+```{r}
+# Define the color_map vector
+color_map = c("NA" = "lightblue", 
+              "Open Water" = "blue", 
+              "Developed, Open Space" = "lightpink", 
+              "Developed, Low Intensity" = "coral1", 
+              "Developed, Medium Intensity" = "red", 
+              "Developed, High Intensity" = "darkred", 
+              "Barren Land (Rock/Sand/Clay)" = "tan", 
+              "Evergreen Forest" = "darkgreen", 
+              "Shrub/Scrub" = "darkgoldenrod3", 
+              "Grassland/Herbaceous" = "darkkhaki", 
+              "Pasture/Hay" = "khaki1", 
+              "Cultivated Crops" = "brown", 
+              "Woody Wetlands" = "lightcyan", 
+              "Emergent Herbaceous Wetlands" = "lightseagreen")
+
+# Create the pie chart
+ggplot(roi_area, aes(x = "", y = area_hectares, fill = Description)) +
+  geom_bar(width = 1, stat = "identity", color='black', size=.3) +
   coord_polar("y", start = 0) +
+  scale_fill_manual(values = color_map) + # Use the color_map vector to specify colors
   theme_void() + 
-  theme(legend.position = "bottom") +
+  theme(legend.position = "right") +
   labs(fill = "Land Use Cover", title = "Land Use Cover Percentage")
 ```
+
 
