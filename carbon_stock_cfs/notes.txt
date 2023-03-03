@@ -1,0 +1,9 @@
+Arturo: Attached are the C storage values for different compartments. 
+I think it makes sense to only show the total in the graph 
+(or above and below without worrying about live or dead), 
+and then in a table show the values for each category, 
+multiplied by the corresponding areas for each class. 
+If possible, it would be good to either let the user adjust the values, 
+or be able to upload their own spreadsheet with their values, 
+whatever is easier for you to code.
+For the uncertainty, consider +/- 30% for all values.
