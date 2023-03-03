@@ -30,7 +30,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       
                       mainPanel(
               
-                      plotOutput(  tmap_options(check.and.fix = TRUE)
+                      plotOutput(  tmap_options(check.and.fix = TRUE),
                         tm_shape(hawaii_coarse) +
                           tm_raster(palette = c(
                             "0" = "lightblue",
@@ -138,19 +138,32 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 #)
 
 
-# Define server logic required to draw a histogram
+# Define server
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-        
+  ### load national land cover data (nlcd)
+  nlcd_file <- here("nlcd_data", 
+                      "hawaii_2001", "hi_landcover_wimperv_9-30-08_se5.img")
+  ### rasterize land cover data
+  nlcd_rast <- terra::rast(nlce_file)
+  
+  ### make nlcd_rast more coarse ie smaller
+  nlcd_coarse <- aggregate(nlce_rast, fact=4, fun=modal)
+  
+  ### convert nlcd_coarse to data frame for pie chart 
+  nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
+    filter(`Land Cover Class` != 0) #filter out the 0 no data values
+  
+    # output$distPlot <- renderPlot({
+    #     # generate bins based on input$bins from ui.R
+    #     x    <- faithful[, 2]
+    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    # 
+    #     # draw the histogram with the specified number of bins
+    #     hist(x, breaks = bins, col = 'darkgray', border = 'white',
+    #          xlab = 'Waiting time to next eruption (in mins)',
+    #          main = 'Histogram of waiting times')
+    #     
         
     output$map_img <- renderImage({
       
@@ -160,7 +173,7 @@ server <- function(input, output) {
       
     }, deleteFile = F)
     })
-}
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
