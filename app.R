@@ -158,14 +158,12 @@ server <- function(input, output) {
   
   
   
-  base_map <-  tm_shape(hawaii_coarse) +
-    tm_raster(palette = c(
-      "0" = "lightblue",
-      "11" = "blue",
-      "31" = "pink",
-      "22" = "red",
-      "52" = "green",
-      "42" = "darkgreen"), n= 14) +
+  base_map <-  tmap_mode("view") +
+  tmap_options(check.and.fix = TRUE) +
+  tm_shape(nlcd_coarse) +
+    tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
+              labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
+                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
     tm_shape(hawaii_parks_vector) +
     tm_borders(col = "black", lwd = 2)
   
