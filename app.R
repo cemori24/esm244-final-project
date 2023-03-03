@@ -13,6 +13,7 @@ library(dplyr)
 library(janitor)
 library(readxl)
 library(ggplot2)
+library
 
 ### Data Files
 lc_rast <- here("nlcd_data",
@@ -48,8 +49,8 @@ roi_carb_per_area <- merge(roi_area, carbon_tph,
   mutate(total_carbon_log_tons = log(area_hectares * ton_c_per_hectare))
 
 roi_carbon_table <- roi_carb_per_area %>% 
-  select(land_cover_class, area_hectares, description, compartment, total_carbon_tons_log) %>% 
-  pivot_wider(names_from = "compartment", values_from = "total_carbon_tons_log")
+  select(land_cover_class, area_hectares, description, compartment, total_carbon_log_tons) %>% 
+  pivot_wider(names_from = "compartment", values_from = "total_carbon_log_tons")
 roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
                                          "description", 
                                          "area_hectares", 
@@ -140,7 +141,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                        insight into potential land transformations that could increase carbon storage within the
                        mapped region."),
 
-                     plotOutput("carbon_chart"),
+                     plotOutput("carbon_plot"),
+                     
+                     tableOutput("carbon_table"),
+                     
+                     
                      
                      p("Image source: https://www.fs.usda.gov/ccrc/sites/default/files/2021-06/Carbon-storage-by-ecosystem.png"),
                      
@@ -225,7 +230,7 @@ server <- function(input, output) {
         geom_col(data = roi_area, mapping = aes(x = land_cover_class, y = area_hectares))
     })
     
-    output$carbon_chart <- renderPlot({
+    output$carbon_plot <- renderPlot({
       ggplot() +
         geom_col(data = roi_carb_per_area, 
                  mapping = aes(x = description, 
@@ -248,6 +253,20 @@ server <- function(input, output) {
              title = "Carbon Storage Per Land Use Type in Hawaii", 
              fill = "Compartment")
     })
+    
+    output$carbon_table <- function() {
+      knitr::kable(roi_carbon_table, 
+            col.names = c("NLCD Class", 
+                     "Land Use Description", 
+                     "Area (ha)", 
+                     "Above Ground", 
+                     "Below Ground", 
+                     "Soil Organic Carbon", 
+                     "Dead Matter", 
+                     "Litter"), 
+            align = "llcccccr",
+            capton = "Total Carbon Stored (tons) per Compartment in ROI")
+    }
   
   }
 
