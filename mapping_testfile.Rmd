@@ -168,6 +168,18 @@ hawaii_coarse <- terra:: aggregate(x= hawaii_rast, fact =4, fun = modal)
 
 
 ```{r}
+writeRaster(hawaii_coarse, filename = "lc_rast_coarse.tif")
+```
+
+```{r}
+lc_coarse_file <- here("nlcd_data", "lc_rast_coarse.tif")
+
+lc_rast <- terra::rast(lc_coarse_file)
+lc_rast
+```
+
+
+```{r}
 hawaii_df <- as.data.frame(hawaii_coarse, xy = TRUE)
 ```
 
@@ -247,10 +259,10 @@ labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensit
 
 ```{r}
 tmap_mode("view")
-tmap_options(check.and.fix = TRUE)
-tm_shape(hawaii_coarse) +
+#tmap_options(check.and.fix = TRUE)
+tm_shape(lc_rast) +
   tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
-  tm_shape(hawaii_parks_vector) +
+  tm_shape(hawaii_x) +
   tm_borders(col = "black", lwd = 2)
 ```
 
@@ -279,5 +291,14 @@ tm_shape(hawaii_coarse) +
 
 
 
+```{r}
+roi_vec <- read_sf(here("nlcd_data",
+                        "hawaii_2001", 
+                        "parks_state",
+                        "parks_state.shp")) %>% 
+  st_transform(st_crs(hawaii_rast))
+
+crs(roi_vec)
+```
 
 

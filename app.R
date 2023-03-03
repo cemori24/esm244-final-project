@@ -15,6 +15,49 @@ library(readxl)
 library(ggplot2)
 
 ### Data Files
+lc_rast <- here("nlcd_data",
+                "lc_rast_coarse.tif") %>% 
+  terra::rast()
+
+lc_rast_df <- as.data.frame(lc_rast, xy = TRUE)
+
+roi_vec <- read_sf(here("nlcd_data",
+                        "hawaii_2001", 
+                        "parks_state",
+                        "parks_state.shp")) %>% 
+  st_transform(st_crs(lc_rast))
+
+carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hectare.xlsx")) %>% 
+  clean_names() %>% 
+  select(class:soc) %>% 
+  pivot_longer(cols = above:soc, 
+               names_to = "compartment", 
+               values_to = "ton_c_per_hectare")
+
+class_names <- read_xlsx(here("carbon_stock_cfs", "class_descriptions_key.xlsx")) %>% 
+  clean_names()
+
+roi_area <- lc_rast_df %>% 
+  clean_names() %>%
+  group_by(land_cover_class) %>%
+  tally(name = "area_hectares") %>% 
+  merge(., class_names, by.x = "land_cover_class", by.y = "class")
+
+roi_carb_per_area <- merge(roi_area, carbon_tph, 
+                           by.x = "land_cover_class", by.y = "class") %>% 
+  mutate(total_carbon_log_tons = log(area_hectares * ton_c_per_hectare))
+
+roi_carbon_table <- roi_carb_per_area %>% 
+  select(land_cover_class, area_hectares, description, compartment, total_carbon_tons_log) %>% 
+  pivot_wider(names_from = "compartment", values_from = "total_carbon_tons_log")
+roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
+                                         "description", 
+                                         "area_hectares", 
+                                         "above", 
+                                         "below", 
+                                         "soc", 
+                                         "dead_matter", 
+                                         "litter")]
 
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
@@ -40,26 +83,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                     ),
                     sidebarLayout(
                       sidebarPanel(
-                        fileInput("file", label = h3("Upload Shapefile (.shp)"))
+                        fileInput("file", label = h3("Upload Polygon (.shp)"))
                       ), #end sidebar panel
                       
                       mainPanel(
-              
-                      plotOutput(  tmap_options(check.and.fix = TRUE),
-                        tm_shape(hawaii_coarse) +
-                          tm_raster(palette = c(
-                            "0" = "lightblue",
-                            "11" = "blue",
-                            "31" = "pink",
-                            "22" = "red",
-                            "52" = "green",
-                            "42" = "darkgreen"), n= 14) +
-                          tm_shape(hawaii_parks_vector) +
-                          tm_borders(col = "black", lwd = 2))
-                       
-                        
-                        # plotOutput('load_pic_plot', height = '600px'), # i dont know what this code does but r wanted me to have something for main panel
-                      #  textOutput('pic_dim_print')
+                        tmapOutput('base_map') #, height = '600px')#, 
+                      #textOutput('pic_dim_print')
                       ) #end main panel
                     ) #end sidebar layout
                     
@@ -111,7 +140,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                        insight into potential land transformations that could increase carbon storage within the
                        mapped region."),
 
-                     img(src = 'Carbon-storage-by-ecosystem.png', height = 300),
+                     plotOutput("carbon_chart"),
                      
                      p("Image source: https://www.fs.usda.gov/ccrc/sites/default/files/2021-06/Carbon-storage-by-ecosystem.png"),
                      
@@ -139,6 +168,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      
                      actionButton("action", label = "Download Carbon Storage Data"),
                      
+                     plotOutput("testplot"),
+                     
+                     
                      
                      br(),
                      hr(),
@@ -157,18 +189,17 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 ### Server Block
 server <- function(input, output) {
 
-  ### load national land cover data (nlcd)
-  nlcd_file <- here("nlcd_data", 
-                      "hawaii_2001", "hi_landcover_wimperv_9-30-08_se5.img")
-  ### rasterize land cover data
-  nlcd_rast <- terra::rast(nlcd_file)
   
-  ### make nlcd_rast more coarse ie smaller
-  nlcd_coarse <- aggregate(nlcd_rast, fact=4, fun=modal)
-  
-  ### convert nlcd_coarse to data frame for pie chart 
-  nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
-    filter(`Land Cover Class` != 0) #filter out the 0 no data values
+ # tmap_mode("view") +
+  # tmap_options(check.and.fix = TRUE) +
+  output$base_map <- renderTmap({
+    tm_shape(lc_rast) +
+    tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
+              labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
+                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
+    tm_shape(roi_vec) +
+    tm_borders(col = "black", lwd = 2)
+  })
   
     # output$distPlot <- renderPlot({
     #     # generate bins based on input$bins from ui.R
@@ -181,14 +212,44 @@ server <- function(input, output) {
     #          main = 'Histogram of waiting times')
     #     
         
-    output$map_img <- renderImage({
+   # output$map_img <- renderImage({
       
-      list(src = "WWW/New_York_map.jpeg",
-           width = "100%",
-           height = '100%')
+  #    list(src = "WWW/New_York_map.jpeg",
+   #        width = "100%",
+    #       height = '100%')
       
-    }, deleteFile = F)
-    }
+    #}, deleteFile = F)
+  
+    output$testplot <- renderPlot({
+      ggplot() +
+        geom_col(data = roi_area, mapping = aes(x = land_cover_class, y = area_hectares))
+    })
+    
+    output$carbon_chart <- renderPlot({
+      ggplot() +
+        geom_col(data = roi_carb_per_area, 
+                 mapping = aes(x = description, 
+                               y = total_carbon_log_tons, 
+                               fill = compartment
+                 )) +
+        scale_fill_manual(values = c("plum2", "slateblue1", "palegreen1", "lightgoldenrod1", "tan1"), 
+                          labels = c(above = "Above Ground", 
+                                     below = "Below Ground", 
+                                     dead_matter = "Dead Matter", 
+                                     litter = "Litter", 
+                                     soc = "Soil Organic Carbon"
+                          )) +
+        theme(axis.text.x = element_text(angle = 45, 
+                                         vjust = 1, 
+                                         hjust=1
+        )) +
+        labs(x = "", 
+             y = "Carbon (log tons)", 
+             title = "Carbon Storage Per Land Use Type in Hawaii", 
+             fill = "Compartment")
+    })
+  
+  }
 
 
 ### Run App
