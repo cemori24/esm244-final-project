@@ -1,0 +1,61 @@
+---
+title: "Piechart"
+author: "E.M.Thomas"
+date: "2023-03-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(raster)
+library(here)
+library(sf)
+library(tidyverse)
+library(terra) ### raster data functionality
+library(tmap)
+library(stars)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+#read in hawaii nlcd file 
+hawaii_file <- here("nlcd_data", "hawaii_2001", "hi_landcover_wimperv_9-30-08_se5.img")
+
+#rasterize hawaii file
+hawaii_rast <- terra::rast(hawaii_file)
+
+#plot hawaii raster
+plot(hawaii_1_rast, main = 'hawaii Landcover Map', axes = FALSE)
+```
+
+
+```{r}
+#make the hawaii raster file smaller 
+hawaii_coarse <- aggregate(hawaii_rast, fact=4, fun=modal)
+
+#turn coarse hawaii raster to dataframe
+hawaii_df <- as.data.frame(hawaii_coarse, xy = TRUE) %>% 
+  filter(`Land Cover Class` != 0) #filter out the 0 no data values
+```
+
+
+```{r}
+#summarize by land cover percentage for pie chart  
+land_use_summary <- hawaii_df %>%
+  group_by(`Land Cover Class`) %>%
+  summarize(count = n()) %>%
+  mutate(percent = count / sum(count) * 100)
+```
+
+```{r}
+ggplot(land_use_summary, aes(x = "", y = percent, fill = `Land Cover Class`)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  theme_void() + 
+  theme(legend.position = "bottom") +
+  labs(fill = "Land Use Cover", title = "Land Use Cover Percentage")
+```
+
