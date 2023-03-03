@@ -18,35 +18,6 @@ library(stars)
 ```
 
 
-```{r}
-adf1 <- raster(here("nlcd_data/ny_nlcd2019/w001001.adf"))
-plot(adf1)
-
-metadata <- XML::xmlToDataFrame(here("nlcd_data/ny_nlcd2019/metadata.xml"))
-
-nypa_facilties <- read_sf(here("nypa_landholdings/NYPA_Facilities.shp")) %>% 
-  janitor::clean_names()
-
-plot(nypa_facilties$geometry)
-              
-```
-```{r}
-st_crs(nypa_facilties) <- 9001
-
-
-st_crs(adf1)
-st_crs(nypa_facilties)
- 
-
-
-```
-
-```{r}
-ggplot() +
-  geom_sf(data = as.data.frame(adf1)) + 
-  geom_sf(data = as.data.frame(nypa_facilties)) +
-  theme_void()
-```
 
 
 ```{r}
@@ -59,20 +30,6 @@ lc_rast
 ```{r}
 lc_1_rast <- lc_rast[[1]]
 plot(lc_1_rast, main = 'US Landcover Map', 
-     col = hcl.colors(20), axes = FALSE)
-```
-
-```{r}
-arturo_clip_file <- here("nlcd_data", "ny_nlcd2019", "prj.adf")
-
-aclip_rast <- terra::rast(arturo_clip_file)
-aclip_rast
-```
-
-
-```{r}
-aclip_1_rast <- aclip_rast[[1]]
-plot(aclip_1_rast, main = 'Arturo NY Clip', 
      col = hcl.colors(20), axes = FALSE)
 ```
 
@@ -99,9 +56,7 @@ plot(ny_vector)
 ```
 
 ###attempting to rasterize NY vector 
-```{r}
-ny_rast <- st_rasterize(ny_vector, lc_rast)
-```
+
 
 ```{r}
 ny_rast_2 <- rasterize(ny_vector, aclip_rast)
@@ -138,7 +93,7 @@ plot(landtype_crop, main = "Cropped lidar")
 
 ```{r}
 ggplot() +
-  geom_raster(data = lc_1_rast, aes(x = x, y = y)) + 
+  geom_raster(data = us_df, aes(x = x, y = y)) + 
   geom_sf(data = ny_vector, color = "blue", fill = NA) +
   coord_sf()
 ```
@@ -208,20 +163,7 @@ plot(hawaii_parks_vector %>%
 
 
 ```{r}
-tmap_mode("view")
-
-tm_shape(hawaii_rast) +
-  tm_raster()
-```
-
-
-```{r}
-us_df <- as.data.frame(hawaii_rast, xy = TRUE)
-```
-
-
-```{r}
-hawaii_coarse <- aggregate(hawaii_rast, 4)
+hawaii_coarse <- terra:: aggregate(x= hawaii_rast, fact =4, fun = modal)
 ```
 
 
@@ -252,7 +194,49 @@ mask is the exact shape of the polygon
 
 
 
+```{r}
+unique(hawaii_df$`Land Cover Class`)
+```
 
+
+
+```{r}
+tmap_mode("view")
+tmap_options(check.and.fix = TRUE)
+tm_shape(hawaii_coarse) +
+  tm_raster(palette = c(
+    "0" = "lightblue",
+    "11" = "blue",
+    "31" = "pink",
+    "22" = "red",
+    "52" = "green",
+    "42" = "darkgreen"), n= 14) +
+  tm_shape(hawaii_parks_vector) +
+  tm_borders(col = "black", lwd = 2)
+```
+
+
+
+```{r}
+unique(hawaii_df$`Land Cover Class`)
+```
+
+
+
+palette = c("blue", "green", "darkgreen", "orange", "yellow")
+```{r}
+tmap_mode("view")
+
+tm_shape(hawaii_coarse) +
+  tm_raster(palette = c(
+    "0" = "lightblue",
+    "11" = "blue",
+    "31" = "pink",
+    "22" = "red",
+    "52" = "green",
+    "42" = "darkgreen"
+  ), n= 14)
+```
 
 
 
