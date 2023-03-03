@@ -151,6 +151,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      
                      actionButton("action", label = "Download Carbon Storage Data"),
                      
+                     plotOutput("testplot"),
+                     
                      
                      br(),
                      hr(),
@@ -198,7 +200,10 @@ server <- function(input, output) {
       
     #}, deleteFile = F)
   
-    
+    output$testplot <- renderPlot({
+      ggplot() +
+        geom_col(data = roi_area, mapping = aes(x = land_cover_class, y = area_hectares))
+    })
   
   }
 
