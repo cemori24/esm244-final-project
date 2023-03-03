@@ -44,7 +44,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       ), #end sidebar panel
                       
                       mainPanel(
-                        plotOutput('base_map', height = '600px'), 
+                        tmapOutput('base_map', height = '600px'), 
                       textOutput('pic_dim_print')
                       ) #end main panel
                     ) #end sidebar layout
@@ -159,14 +159,13 @@ server <- function(input, output) {
   ### load Hawaii National Parks Data
   roi_vec <- read_sf(here("nlcd_data","hawaii_2001", "parks_state","parks_state.shp")) 
   
-  
-  base_map <-  tmap_mode("view") +
-  tmap_options(check.and.fix = TRUE) +
-  tm_shape(nlcd_coarse) +
+ # tmap_mode("view") +
+  # tmap_options(check.and.fix = TRUE) +
+  output$base_map <-  tm_shape(nlcd_coarse) +
     tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
               labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
                          "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
-    tm_shape(hawaii_parks_vector) +
+    tm_shape(roi_vec) +
     tm_borders(col = "black", lwd = 2)
   
     # output$distPlot <- renderPlot({
