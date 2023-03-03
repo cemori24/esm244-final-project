@@ -1,0 +1,17 @@
+---
+title: "classarea_testfile"
+author: "C. E. Mori"
+date: "2023-03-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+hawaii_class_areas <- hawaii_df %>% ### This takes a RASTER df with one row per pixel. Each pixel has a land cover class.
+  janitor::clean_names() %>% 
+  group_by(land_cover_class) %>% 
+  tally(name = "area_hectares") ### Counts the number of observations per group (defined as land cover class in previous row).
+```

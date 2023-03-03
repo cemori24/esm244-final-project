@@ -171,7 +171,52 @@ hawaii_coarse <- terra:: aggregate(x= hawaii_rast, fact =4, fun = modal)
 hawaii_df <- as.data.frame(hawaii_coarse, xy = TRUE)
 ```
 
+### Integrating the Hawaii df (containing pixel and class data) with carbon calculation + carbon map:
 
+```{r}
+hawaii_class_areas <- hawaii_df %>% 
+  janitor::clean_names() %>% 
+  group_by(land_cover_class) %>% 
+  tally(name = "area_hectares") ### Counts the number of observations per group (defined as land cover class in previous row).
+```
+
+```{r}
+ratio_carbon_tph <- readxl::read_xlsx(here("carbon_stock_cfs/carbon_storage_ton_C_per_hectare.xlsx")) %>% 
+  clean_names() %>% 
+  dplyr::select(class:soc) %>% 
+  pivot_longer(cols = above:soc, 
+               names_to = "compartment", values_to = "ton_c_per_hectare")
+
+hawaii_total_carbon <- merge(hawaii_class_areas, ratio_carbon_tph, 
+                           by.x = "land_cover_class", by.y = "class") %>% 
+  mutate(total_carbon_tons_log = log(area_hectares * ton_c_per_hectare)) 
+
+hawaii_carbon_plot <- ggplot() +
+  geom_col(data = hawaii_total_carbon, 
+           mapping = aes(x = biome, 
+                         y = total_carbon_tons_log, 
+                         fill = compartment
+                         )) +
+  scale_fill_manual(values = c("plum2", "slateblue1", "palegreen1", "lightgoldenrod1", "tan1"), 
+                    labels = c(above = "Above Ground", 
+                               below = "Below Ground", 
+                               dead_matter = "Dead Matter", 
+                               litter = "Litter", 
+                               soc = "Soil Organic Carbon"
+                               )) +
+  theme(axis.text.x = element_text(angle = 45, 
+                                   vjust = 1, 
+                                   hjust=1
+                                   )) +
+  labs(x = "", 
+       y = "Carbon (log tons)", 
+       title = "Carbon Storage Per Land Use Type in Hawaii", 
+       fill = "Compartment")
+
+hawaii_carbon_plot
+```
+
+### Further plots by Chloe
 
 ``` {r}
 ggplot() +

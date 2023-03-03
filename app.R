@@ -1,12 +1,27 @@
+### Packages
 library(shiny)
 library(bslib) ### Custom themes. Run command bs_theme_preview() in console.
+library(raster)
+library(here)
+library(sf)
+library(tidyverse)
+library(terra) ### Raster data functionality
+library(tmap)
+library(rgdal)
+library(stars)
+library(dplyr)
+library(janitor)
+library(readxl)
+library(ggplot2)
 
+### Data Files
 
-# Define UI for application that draws a histogram
+### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage(
                   "Land Use Carbon Stock & Conversion",
-                  
+
+### TAB 1: Info, Upload Button                                    
                   tabPanel(
                     'Info',
                     fluidRow(""),
@@ -53,7 +68,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                   
 
             
-            
+### TAB 2: Land Cover Map, Pie Chart          
     tabPanel("Land Cover Map", 
              #imageOutput("map_img"),
              #br(),
@@ -80,7 +95,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
             
             
             
-            
+### TAB 3: Carbon Stock Bar Chart, Table, Transformations            
             tabPanel("Land Transformations", 
                      
                      h4(strong("Chart of Carbon Storage Options")),
@@ -136,9 +151,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
         )
    #)
 #)
+### End of UI Block
 
 
-# Define server
+### Server Block
 server <- function(input, output) {
 
   ### load national land cover data (nlcd)
@@ -172,8 +188,8 @@ server <- function(input, output) {
            height = '100%')
       
     }, deleteFile = F)
-    })
+    }
 
 
-# Run the application 
+### Run App
 shinyApp(ui = ui, server = server)
