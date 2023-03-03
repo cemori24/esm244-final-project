@@ -165,9 +165,93 @@ hawaii_rast
 
 ```{r}
 hawaii_1_rast <- hawaii_rast[[1]]
-plot(hawaii_1_rast, main = 'hawaii Landcover Map', 
-     col = hcl.colors(20), axes = FALSE)
+plot(hawaii_1_rast, main = 'hawaii Landcover Map', axes = FALSE)
 ```
+
+
+```{r}
+hawaii_parks_vector <- read_sf(here("nlcd_data","hawaii_2001", "parks_state","parks_state.shp")) 
+hawaii_parks_vector
+```
+
+```{r}
+crs(hawaii_rast)
+```
+
+
+
+```{r}
+crs(hawaii_rast)
+hawaii_x<- hawaii_parks_vector %>% 
+  st_transform(st_crs(hawaii_rast))
+```
+
+```{r}
+crs(hawaii_parks_vector)
+```
+
+
+```{r}
+ak_park <- hawaii_parks_vector %>% 
+   filter(NAME == "AHUPUAA O KAHANA STATE PARK") #%>% 
+ # select(geometry)
+plot(ak_park)
+```
+
+
+
+```{r}
+plot(hawaii_1_rast, main = 'hawaii Landcover Map', axes = FALSE) 
+plot(hawaii_parks_vector %>% 
+       select(geometry), add = TRUE)
+```
+
+
+```{r}
+tmap_mode("view")
+
+tm_shape(hawaii_rast) +
+  tm_raster()
+```
+
+
+```{r}
+us_df <- as.data.frame(hawaii_rast, xy = TRUE)
+```
+
+
+```{r}
+hawaii_coarse <- aggregate(hawaii_rast, 4)
+```
+
+
+```{r}
+hawaii_df <- as.data.frame(hawaii_coarse, xy = TRUE)
+```
+
+
+
+``` {r}
+ggplot() +
+  geom_raster(data = hawaii_df, aes(x = x, y = y, fill = ndvi)) +
+  coord_sf(expand = 0) +
+  scale_fill_gradient(low = 'grey30', high = 'grey80') +
+  theme_void() +
+  theme(panel.background = element_rect(fill = 'slateblue4'))
+```
+
+
+```{r}
+ggplot() 
+  geom_raster(data = hawaii_df, aes(x = x, y = y)) +
+  coord_sf(expand = 0, aes(color = "Land Cover Class")) + 
+  theme_void() 
+```
+crop is square result 
+mask is the exact shape of the polygon 
+
+
+
 
 
 
