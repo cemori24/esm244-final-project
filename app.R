@@ -23,7 +23,8 @@ lc_rast <- here("nlcd_data",
 roi_vec <- read_sf(here("nlcd_data",
                         "hawaii_2001", 
                         "parks_state",
-                        "parks_state.shp"))
+                        "parks_state.shp")) %>% 
+  st_transform(st_crs(lc_rast))
 
 carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hectare.xlsx")) %>% 
   clean_names() %>% 
