@@ -22,15 +22,15 @@ test_class_areas <- readxl::read_xlsx(here("carbon_stock_cfs/test_areas.xlsx")) 
   clean_names()
 
 test_total_carbon <- merge(test_class_areas, ratio_carbon_tph, by = "class") %>% 
-  mutate(total_carbon = area * ton_c_per_hectare) %>% 
-  mutate(class_factor = as.factor(class))
+  mutate(total_carbon = area * ton_c_per_hectare) 
 ```
 
 ```{r}
 test_plot <- ggplot() +
-  geom_col(data = test_total_carbon, mapping = aes(x = class_factor, y = total_carbon, fill = compartment)) +
-  scale_fill_manual(values = c("darkseagreen1", "slateblue1", "tan1", "lightgoldenrod1", "thistle1")) +
-  theme_dark()
+  geom_col(data = test_total_carbon, mapping = aes(x = biome, y = total_carbon, fill = compartment)) +
+  scale_fill_manual(values = c("plum2", "slateblue1", "palegreen1", "lightgoldenrod1", "tan1"), labels = c(above = "Above Ground", below = "Below Ground", dead_matter = "Dead Matter", litter = "Litter", soc = "Soil Organic Carbon")) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  labs(x = "", y = "Carbon (tons / hectare)", title = "Carbon Storage Across Biomes in ROI", fill = "Compartment")
 
 test_plot
 ```
