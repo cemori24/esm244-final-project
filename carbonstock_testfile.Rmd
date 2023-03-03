@@ -24,7 +24,7 @@ test_class_areas <- readxl::read_xlsx(here("carbon_stock_cfs/test_areas.xlsx")) 
 
 test_total_carbon <- merge(test_class_areas, ratio_carbon_tph, 
                            by = "class") %>% 
-  mutate(total_carbon = area * ton_c_per_hectare) 
+  mutate(total_carbon_log = log(area * ton_c_per_hectare) 
 ```
 
 ```{r}
@@ -46,7 +46,7 @@ test_plot <- ggplot() +
                                    hjust=1
                                    )) +
   labs(x = "", 
-       y = "Carbon (tons / hectare)", 
+       y = "Carbon (tons)", 
        title = "Carbon Storage Across Biomes in ROI", 
        fill = "Compartment")
 
