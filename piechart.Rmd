@@ -43,6 +43,12 @@ hawaii_df <- as.data.frame(hawaii_coarse, xy = TRUE) %>%
 
 
 ```{r}
+
+```
+
+
+
+```{r}
 #summarize by land cover percentage for pie chart  
 land_use_summary <- hawaii_df %>%
   group_by(`Land Cover Class`) %>%
