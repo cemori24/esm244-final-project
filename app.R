@@ -40,26 +40,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                     ),
                     sidebarLayout(
                       sidebarPanel(
-                        fileInput("file", label = h3("Upload Shapefile (.shp)"))
+                        fileInput("file", label = h3("Upload Polygon (.shp)"))
                       ), #end sidebar panel
                       
                       mainPanel(
-              
-                      plotOutput(  tmap_options(check.and.fix = TRUE),
-                        tm_shape(hawaii_coarse) +
-                          tm_raster(palette = c(
-                            "0" = "lightblue",
-                            "11" = "blue",
-                            "31" = "pink",
-                            "22" = "red",
-                            "52" = "green",
-                            "42" = "darkgreen"), n= 14) +
-                          tm_shape(hawaii_parks_vector) +
-                          tm_borders(col = "black", lwd = 2))
-                       
-                        
-                        # plotOutput('load_pic_plot', height = '600px'), # i dont know what this code does but r wanted me to have something for main panel
-                      #  textOutput('pic_dim_print')
+                        plotOutput('base_map', height = '600px'), 
+                      textOutput('pic_dim_print')
                       ) #end main panel
                     ) #end sidebar layout
                     
@@ -169,6 +155,19 @@ server <- function(input, output) {
   ### convert nlcd_coarse to data frame for pie chart 
   nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
     filter(`Land Cover Class` != 0) #filter out the 0 no data values
+  
+  
+  
+  base_map <-  tm_shape(hawaii_coarse) +
+    tm_raster(palette = c(
+      "0" = "lightblue",
+      "11" = "blue",
+      "31" = "pink",
+      "22" = "red",
+      "52" = "green",
+      "42" = "darkgreen"), n= 14) +
+    tm_shape(hawaii_parks_vector) +
+    tm_borders(col = "black", lwd = 2)
   
     # output$distPlot <- renderPlot({
     #     # generate bins based on input$bins from ui.R
