@@ -156,6 +156,8 @@ server <- function(input, output) {
   nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
     filter(`Land Cover Class` != 0) #filter out the 0 no data values
   
+  ### load Hawaii National Parks Data
+  roi_vec <- read_sf(here("nlcd_data","hawaii_2001", "parks_state","parks_state.shp")) 
   
   
   base_map <-  tmap_mode("view") +
