@@ -150,7 +150,7 @@ server <- function(input, output) {
   ### make nlcd_rast more coarse ie smaller
   nlcd_coarse <- aggregate(nlce_rast, fact=4, fun=modal)
   
-  ### convert nlcd_coarse to data frame
+  ### convert nlcd_coarse to data frame for pie chart 
   nlcd_df <- as.data.frame(nlcd_coarse, xy = TRUE) %>% 
     filter(`Land Cover Class` != 0) #filter out the 0 no data values
   
