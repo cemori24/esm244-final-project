@@ -1,0 +1,89 @@
+---
+title: "app_testfile"
+author: "C. E. Mori"
+date: "2023-03-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(shiny)
+library(bslib) ### Custom themes. Run command bs_theme_preview() in console.
+library(raster)
+library(here)
+library(sf)
+library(tidyverse)
+library(terra) ### Raster data functionality
+library(tmap)
+library(rgdal)
+library(stars)
+library(dplyr)
+library(janitor)
+library(readxl)
+library(ggplot2)
+
+```
+
+```{r}
+lc_rast <- here("nlcd_data",
+                "lc_rast_coarse.tif") %>% 
+  terra::rast()
+
+lc_rast_df <- as.data.frame(lc_rast, xy = TRUE)
+
+roi_vec <- read_sf(here("nlcd_data",
+                        "hawaii_2001", 
+                        "parks_state",
+                        "parks_state.shp")) %>% 
+  st_transform(st_crs(lc_rast))
+
+carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hectare.xlsx")) %>% 
+  clean_names() %>% 
+  select(class:soc) %>% 
+  pivot_longer(cols = above:soc, 
+               names_to = "compartment", 
+               values_to = "ton_c_per_hectare")
+
+class_names <- read_xlsx(here("carbon_stock_cfs", "class_descriptions_key.xlsx")) %>% 
+  clean_names()
+
+roi_area <- lc_rast_df %>% 
+  clean_names() %>%
+  group_by(land_cover_class) %>%
+  tally(name = "area_hectares") %>% 
+  merge(., class_names, by.x = "land_cover_class", by.y = "class")
+
+roi_carb_per_area <- merge(roi_area, carbon_tph, 
+                           by.x = "land_cover_class", by.y = "class") %>% 
+  mutate(total_carbon_tons_log = log(area_hectares * ton_c_per_hectare)) 
+
+roi_carbon_table <- roi_carb_per_area %>% 
+  select(land_cover_class, area_hectares, description, compartment, total_carbon_tons_log) %>% 
+  pivot_wider(names_from = "compartment", values_from = "total_carbon_tons_log")
+
+roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
+                                         "description", 
+                                         "area_hectares", 
+                                         "above", 
+                                         "below", 
+                                         "soc", 
+                                         "dead_matter", 
+                                         "litter")]
+
+```
+
+```{r}
+ kable(roi_carbon_table, 
+            col.names = c("NLCD Class", 
+                     "Land Use Description", 
+                     "Area (ha)", 
+                     "Above Ground", 
+                     "Below Ground", 
+                     "Soil Organic Carbon", 
+                     "Dead Matter", 
+                     "Litter"), 
+            align = "llcccccr",
+            capton = "Total Carbon Stored (tons) per Compartment in ROI")
+```
+
