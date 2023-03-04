@@ -63,37 +63,50 @@ roi_carbon_table <- roi_carbon_table[, c("land_cover_class",
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage(
-                  "Land Use Carbon Stock & Conversion",
+                  "Land Type Carbon Stock & Conversion",
 
 ### TAB 1: Info, Upload Button                                    
                   tabPanel(
-                    'Info',
+                    'Upload Data',
                     fluidRow(""),
-                    fluidRow(h5("This App will allow users to upload a shapefile 
-                                with landuse data for an area, and in return will 
-                                be shown how much cabon is stored in various 
-                                land uses, and how their carbon storage potential 
-                                would change by changing land type.")
+                    fluidRow(h5("This App will allow users to upload a vector polygon of their interest area, for example
+                                a county, national park, or private land, and in return will be shown how much 
+                                cabon is being stored in that area. The carbon storage will be broken down
+                                by the different land types in interest area, and will distinguish above and below ground 
+                                carbon stocks. Users will also be able to how their carbon storage potential 
+                                would change by changing land types.")
                     ),
                     fluidPage(
                       
                       hr(),
                       fluidRow(column(4, verbatimTextOutput("value"))),
-                      fluidRow(h6("Citation please."))
+                      
                       
                     ),
                     sidebarLayout(
                       sidebarPanel(
-                        fileInput("file", label = h3("Upload Polygon (.shp)"))
+                      fluidRow(h6("Upload a vector file (.tif, .img, .shp, etc.) that outlines your area of interest. 
+                                  File should not inlcude any other polygons as area within all polygons will be 
+                                  used for carbon stock calculations")),
+                        fileInput("file", label = div(style = "font-size:20px", "Upload Area of Interest File"))
                       ), #end sidebar panel
                       
                       mainPanel(
                         tmapOutput('base_map') #, height = '600px')#, 
                       #textOutput('pic_dim_print')
                       ) #end main panel
-                    ) #end sidebar layout
+                    ), #end sidebar layout
                     
-
+                    tags$blockquote("Land Use Data provided by:
+                                    Homer, Collin G., Huang, Chengquan, Yang, Limin, Wylie, 
+                                    Bruce K., Coan, Michael J., Development of a 2001 National 
+                                    Land Cover Database for the United States: Photogrammetric 
+                                    Engineering and Remote Sensing, v. 70, no. 7, p. 829–840, at 
+                                    https://doi.org/10.14358/PERS.70.7.829. \n
+                                    Hawaii State Park Data provided by:
+                                    Hawaii Statewide GIS Program at
+                                    https://planning.hawaii.gov/gis/download-gis-data-expanded/"),
+                    hr(),
                   ), #end info tab panel
                   
 
@@ -193,17 +206,18 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 ### Server Block
 server <- function(input, output) {
 
-  
- # tmap_mode("view") +
-  # tmap_options(check.and.fix = TRUE) +
+  # tmap_options(check.and.fix = TRUE) 
   output$base_map <- renderTmap({
     tm_shape(lc_rast) +
     tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
               labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
-                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14) +
+                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), 
+              n= 14, title = "Land Type") +
     tm_shape(roi_vec) +
     tm_borders(col = "black", lwd = 2)
   })
+  
+  
   
     # output$distPlot <- renderPlot({
     #     # generate bins based on input$bins from ui.R
