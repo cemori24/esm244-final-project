@@ -46,7 +46,9 @@ roi_area <- lc_rast_df %>%
 
 roi_carb_per_area <- merge(roi_area, carbon_tph, 
                            by.x = "land_cover_class", by.y = "class") %>% 
-  mutate(total_carbon_log_tons = log(area_hectares * ton_c_per_hectare))
+  mutate(total_carbon_log_tons = log(area_hectares * ton_c_per_hectare)) #%>% 
+  # mutate(error_low = 0.7*total_carbon_log_tons) %>% 
+  # mutate(error_high = 1.3*total_carbon_log_tons)
 
 roi_carbon_table <- roi_carb_per_area %>% 
   select(land_cover_class, area_hectares, description, compartment, total_carbon_log_tons) %>% 
@@ -181,7 +183,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
                               "Note: This site is still under construction (last updated: 2023-03-03).
                       We still need to insert a table and enable user manipulation of the data, plus
-                      (possibly) a data download button."),
+                      (possibly) a data download button. Plot also lacks error bars."),
                      
                      h4(strong("Carbon Storage in ROI by Compartment")),
                      p(style="text-align: justify; font-size = 30px",
@@ -286,7 +288,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      #   This functionality would be useful to a user who, for instance, intends to produce a report
                      #   on the most effective land transformations to increase carbon storage within the mapped region."),
                      
-                     actionButton("action", label = "Download Transformation Data")
+                     actionButton("action", label = "Download")
                      
           )
         )
@@ -358,6 +360,10 @@ server <- function(input, output) {
                                      litter = "Litter", 
                                      soc = "Soil Organic Carbon"
                           )) +
+        # geom_errorbar(data = roi_carb_per_area,
+        #               mapping = aes(x = description,
+        #                             ymin = error_low,
+        #                             ymax = error_high)) +
         theme(axis.text.x = element_text(angle = 45, 
                                          vjust = 1, 
                                          hjust=1
