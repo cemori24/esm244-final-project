@@ -60,52 +60,78 @@ roi_carbon_table <- roi_carbon_table[, c("land_cover_class",
                                          "dead_matter", 
                                          "litter")]
 
+color_map <- c("NA" = "lightblue", 
+              "Open Water" = "blue", 
+              "Developed, Open Space" = "lightpink", 
+              "Developed, Low Intensity" = "coral1", 
+              "Developed, Medium Intensity" = "red", 
+              "Developed, High Intensity" = "darkred", 
+              "Barren Land (Rock/Sand/Clay)" = "tan", 
+              "Evergreen Forest" = "darkgreen", 
+              "Shrub/Scrub" = "darkgoldenrod3", 
+              "Grassland/Herbaceous" = "darkkhaki", 
+              "Pasture/Hay" = "khaki1", 
+              "Cultivated Crops" = "brown", 
+              "Woody Wetlands" = "lightcyan", 
+              "Emergent Herbaceous Wetlands" = "lightseagreen")
+
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage(
-                  "Land Type Carbon Stock & Conversion",
+                  "Carbon Storage Calculator",
 
 ### TAB 1: Info, Upload Button                                    
                   tabPanel(
                     'Upload Data',
-                    fluidRow(""),
-                    fluidRow(h5("This App will allow users to upload a vector polygon of their interest area, for example
-                                a county, national park, or private land, and in return will be shown how much 
-                                cabon is being stored in that area. The carbon storage will be broken down
-                                by the different land types in interest area, and will distinguish above and below ground 
-                                carbon stocks. Users will also be able to how their carbon storage potential 
-                                would change by changing land types.")
-                    ),
-                    fluidPage(
-                      
-                      hr(),
-                      fluidRow(column(4, verbatimTextOutput("value"))),
-                      
-                      
-                    ),
-                    sidebarLayout(
-                      sidebarPanel(
-                      fluidRow(h6("Upload a vector file (.tif, .img, .shp, etc.) that outlines your area of interest. 
-                                  File should not inlcude any other polygons as area within all polygons will be 
-                                  used for carbon stock calculations")),
-                        fileInput("file", label = div(style = "font-size:20px", "Upload Area of Interest File"))
-                      ), #end sidebar panel
-                      
-                      mainPanel(
-                        tmapOutput('base_map') #, height = '600px')#, 
-                      #textOutput('pic_dim_print')
-                      ) #end main panel
-                    ), #end sidebar layout
+                   
+                    fluidRow(style='text-align:center; text-color:red;color:red; font-size:100%;', 
+                             "Note: This site is still under construction (last updated: 2023-03-03)."),
                     
-                    tags$blockquote("Land Use Data provided by:
+                    h5("This app was created by students of the Bren School to assist with analysis of carbon storage 
+                       potential of geographic regions. Users can (1) upload a vector polygon of their Region of 
+                       Interest (ROI) within the US, (2) view current land use data, and (3) view current carbon 
+                       storage and opportunities for improvement."),
+                    h5(strong("To begin, please upload a vector polygon (.tif, .img, .shp) outlining your ROI.  The file 
+                       should NOT include any other polygons, because all polygons will be used for carbon storage
+                       calculations.")),
+                    
+                    br(), 
+                    
+                    fluidRow(
+                      column(12, 
+                             align = "center", 
+                             fileInput("file", label = div(style = "font-size:16px", "Upload ROI Vector")))
+                    ),
+                    
+                    br(),
+                    
+                    # fluidPage(
+                    #   
+                    #   hr(),
+                    #   fluidRow(column(4, verbatimTextOutput("value"))),
+                    #   
+                    #   
+                    # ),
+                    # sidebarLayout(
+                    #   sidebarPanel(
+                    #     fileInput("file", label = div(style = "font-size:20px", "Upload Area of Interest File"))
+                    #   ), #end sidebar panel
+                    #   
+                    #   mainPanel(
+                    #     tmapOutput('base_map') #, height = '600px')#, 
+                    #   #textOutput('pic_dim_print')
+                    #   ) #end main panel
+                    # ), #end sidebar layout
+                    
+                    hr(),
+                    tags$blockquote(HTML("<p><b>Data Sources</b></p><p><i>Land Use Data:</i>
                                     Homer, Collin G., Huang, Chengquan, Yang, Limin, Wylie, 
                                     Bruce K., Coan, Michael J., Development of a 2001 National 
                                     Land Cover Database for the United States: Photogrammetric 
                                     Engineering and Remote Sensing, v. 70, no. 7, p. 829–840, at 
-                                    https://doi.org/10.14358/PERS.70.7.829. \n
-                                    Hawaii State Park Data provided by:
-                                    Hawaii Statewide GIS Program at
-                                    https://planning.hawaii.gov/gis/download-gis-data-expanded/"),
+                                    https://doi.org/10.14358/PERS.70.7.829.</p><p><i>Hawaii State 
+                                    Park Vector File:</i> Hawaii Statewide GIS Program at
+                                    https://planning.hawaii.gov/gis/download-gis-data-expanded/.</p>")),
                     hr(),
                   ), #end info tab panel
                   
@@ -124,7 +150,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                        of stored carbon and red representing areas with little to no carbon storage.  
                        Alternatively, the color scale would represent potential for carbon storage."),
              
-             img(src = 'New_York_map.jpeg', height = 500),
+             plotOutput("piechart"),
+             
              
              br(),
              hr(),
@@ -188,7 +215,6 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                      plotOutput("testplot"),
                      
                      
-                     
                      br(),
                      hr(),
                      
@@ -238,9 +264,15 @@ server <- function(input, output) {
       
     #}, deleteFile = F)
   
-    output$testplot <- renderPlot({
-      ggplot() +
-        geom_col(data = roi_area, mapping = aes(x = land_cover_class, y = area_hectares))
+  
+    output$piechart <- renderPlot({
+      ggplot(roi_area, aes(x = "", y = area_hectares, fill = description)) +
+        geom_bar(width = 1, stat = "identity", color='black', size=.3) +
+        coord_polar("y", start = 0) +
+        scale_fill_manual(values = color_map) + # Use the color_map vector to specify colors
+        theme_void() + 
+        theme(legend.position = "right") +
+        labs(fill = "Land Use Cover", title = "Land Use Cover Percentage")
     })
     
     output$carbon_plot <- renderPlot({
@@ -267,21 +299,21 @@ server <- function(input, output) {
              fill = "Compartment")
     })
     
-    output$carbon_table_test <- renderTable({roi_carbon_table})
-    
-    output$carbon_table <- function() {
-      knitr::kable(roi_carbon_table, 
-            col.names = c("NLCD Class", 
-                     "Land Use Description", 
-                     "Area (ha)", 
-                     "Above Ground", 
-                     "Below Ground", 
-                     "Soil Organic Carbon", 
-                     "Dead Matter", 
-                     "Litter"), 
-            align = "llcccccr",
-            capton = "Total Carbon Stored (tons) per Compartment in ROI")
-    }
+    # output$carbon_table_test <- renderTable({roi_carbon_table})
+    # 
+    # output$carbon_table <- function() {
+    #   knitr::kable(roi_carbon_table, 
+    #         col.names = c("NLCD Class", 
+    #                  "Land Use Description", 
+    #                  "Area (ha)", 
+    #                  "Above Ground", 
+    #                  "Below Ground", 
+    #                  "Soil Organic Carbon", 
+    #                  "Dead Matter", 
+    #                  "Litter"), 
+    #         align = "llcccccr",
+    #         capton = "Total Carbon Stored (tons) per Compartment in ROI")
+    # }
   
   }
 
