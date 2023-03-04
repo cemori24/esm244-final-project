@@ -81,11 +81,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                   "Carbon Storage Calculator",
 
 ### TAB 1: Info, Upload Button                                    
-                  tabPanel(
-                    'Upload Data',
+                  tabPanel("Upload Shapefile",
                    
-                    fluidRow(style='text-align:center; text-color:red;color:red; font-size:100%;', 
-                             "Note: This site is still under construction (last updated: 2023-03-03)."),
+                    fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
+                             "Note: This site is still under construction (last updated: 2023-03-03).
+                             Vector upload functionality is still missing."),
+                    
+                    h4(strong("Welcome!")),
                     
                     h5("This app was created by students of the Bren School to assist with analysis of carbon storage 
                        potential of geographic regions. Users can (1) upload a vector polygon of their Region of 
@@ -138,95 +140,157 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 
             
 ### TAB 2: Land Cover Map, Pie Chart          
-    tabPanel("Land Cover Map", 
-             #imageOutput("map_img"),
-             #br(),
-             #hr(),
-             h4(strong("Land Cover Shapefile Visualization")),
-             p(style="text-align: justify; font-size = 25px",
-               "Eventually, this tab will display an interactive 
-                       map that visualizes the current land use and carbon storage data. There will
-                       likely be a color scale, with green representing areas with a lot 
-                       of stored carbon and red representing areas with little to no carbon storage.  
-                       Alternatively, the color scale would represent potential for carbon storage."),
+    tabPanel("Shapefile Visualization", 
+             
+             fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
+                      "Note: This site is still under construction (last updated: 2023-03-03).
+                      We are still working on getting the default vector to display in tmap."),
+ 
+             h4(strong("Map of ROI by Land Use Classification")),
+             p(style="text-align: justify; font-size = 30px",
+               "The map below shows the ROI on top of a base map that is colored according to NLCD land
+               use classifications, with each pixel representing 1 hectare (100m x 100m). See the legend
+               for a description of each land use classification. Zoom in for more details."),
+             
+             tmapOutput("base_map"),
+             
+             br(),
+             
+             h4(strong("Chart of Land Use Within ROI")),
+             p(style="text-align: justify; font-size = 30px",
+               "Land use classifications within the ROI are broken down in the chart below."),
              
              plotOutput("piechart"),
              
-             
-             br(),
-             hr(),
-             tags$blockquote("This Shiny app is still under continuous development. 
-           Please look forward to future updates!"),
-           hr(),
-           
-           verbatimTextOutput("summary")
+           #  
+           #   br(),
+           #   hr(),
+           #   tags$blockquote("This Shiny app is still under continuous development. 
+           # Please look forward to future updates!"),
+           # hr(),
+           # 
+           # verbatimTextOutput("summary")
            ),
 
             
             
             
 ### TAB 3: Carbon Stock Bar Chart, Table, Transformations            
-            tabPanel("Land Transformations", 
+            tabPanel("Carbon Storage Analysis", 
                      
-                     h4(strong("Chart of Carbon Storage Options")),
+                     fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
+                              "Note: This site is still under construction (last updated: 2023-03-03).
+                      We still need to insert a table and enable user manipulation of the data, plus
+                      (possibly) a data download button."),
                      
-                     p(""),
-                     p(style="text-align: justify: font-size = 25px",
-                       "This tab will display a bar chart showing areas of low, medium, and high carbon
-                       storage as a percentage of the mapped region. Below the chart, the user will be able to
-                       choose a land transformation from a dropdown menu and input an area to be transformed.
-                       For example, the user can select 'Wetland to Forest' and input 100 sq. kilometers.
-                       The chart will update automatically, showing the new %s and difference from the original in
-                       a shaded region of each bar in the chart. This functionality will help the user to gain 
-                       insight into potential land transformations that could increase carbon storage within the
-                       mapped region."),
-
+                     h4(strong("Carbon Storage in ROI by Compartment")),
+                     p(style="text-align: justify; font-size = 30px",
+                       "The chart below shows current carbon storage for each land use type within the ROI.
+                       See the legend for a breakdown of carbon storage by compartment. The five compartments 
+                       listed are above ground, below ground, soil organic carbon (organic matter within soil),
+                       dead matter, and litter."),
+                     
+                     # p(style="text-align: justify: font-size = 25px",
+                     #   "This tab will display a bar chart showing areas of low, medium, and high carbon
+                     #   storage as a percentage of the mapped region. Below the chart, the user will be able to
+                     #   choose a land transformation from a dropdown menu and input an area to be transformed.
+                     #   For example, the user can select 'Wetland to Forest' and input 100 sq. kilometers.
+                     #   The chart will update automatically, showing the new %s and difference from the original in
+                     #   a shaded region of each bar in the chart. This functionality will help the user to gain 
+                     #   insight into potential land transformations that could increase carbon storage within the
+                     #   mapped region."),
+                     
                      plotOutput("carbon_plot"),
                      
+                     br(),
                      
+                     h4(strong("Land Transformation Analysis (Interactive Tool)")),
+                     p(style="text-align: justify: font-size = 30px",
+                       "This tool can be used to calculate the impact of land transformations on the carbon
+                       stocks plotted above. Please first select a CURRENT land use type (A), then select a 
+                       TARGET land use type (B). Finally, input an area to transform. This area should be less
+                       than or equal to the area of the CURRENT land use type (A)."),
                      
-                     
-                     p("Image source: https://www.fs.usda.gov/ccrc/sites/default/files/2021-06/Carbon-storage-by-ecosystem.png"),
-                     
-                     selectInput("select", label = h3("Transform FROM:"), 
-                                 choices = list("Grassland" = 1, "Forest" = 2, "Wetland" = 3), 
-                                 selected = 1),
-                     
-                     selectInput("select", label = h3("Transform TO:"), 
-                                 choices = list("Grassland" = 1, "Forest" = 2, "Wetland" = 3), 
-                                 selected = 1),
-                     
-                     numericInput("num", label = h3("Area of Transformation:"), value = 1),
+                     sidebarLayout(
+                         sidebarPanel(
+                           selectInput("select", label = h5("(A) Transform FROM:"), 
+                                       choices = list("Open Water" = 1, 
+                                                      "Perennial Ice/Snow" = 2, 
+                                                      "Developed, Open Space" = 3,
+                                                      "Developed, Low Intensity" = 4,
+                                                      "Developed, Medium Intensity" = 5,
+                                                      "Developed, High Intensity" = 6,
+                                                      "Barren Land (Rock/Sand/Clay)" = 7,
+                                                      "Deciduous Forest" = 8,
+                                                      "Evergreen Forest" = 9,
+                                                      "Mixed Forest" = 10,
+                                                      "Dwarf Scrub" = 11,
+                                                      "Shrub/Scrub" = 12,
+                                                      "Grassland/Herbaceous" = 13,
+                                                      "Sedge/Herbaceous" = 14,
+                                                      "Lichens" = 15,
+                                                      "Moss" = 16,
+                                                      "Pasture/Hay" = 17,
+                                                      "Cultivated Crops" = 18,
+                                                      "Woody Wetlands" = 19,
+                                                      "Emergent Herbaceous Woodlands" = 20), 
+                                       selected = 1),
+                           
+                           selectInput("select", label = h5("(B) Transform TO:"), 
+                                       choices = list("Open Water" = 1, 
+                                                      "Perennial Ice/Snow" = 2, 
+                                                      "Developed, Open Space" = 3,
+                                                      "Developed, Low Intensity" = 4,
+                                                      "Developed, Medium Intensity" = 5,
+                                                      "Developed, High Intensity" = 6,
+                                                      "Barren Land (Rock/Sand/Clay)" = 7,
+                                                      "Deciduous Forest" = 8,
+                                                      "Evergreen Forest" = 9,
+                                                      "Mixed Forest" = 10,
+                                                      "Dwarf Scrub" = 11,
+                                                      "Shrub/Scrub" = 12,
+                                                      "Grassland/Herbaceous" = 13,
+                                                      "Sedge/Herbaceous" = 14,
+                                                      "Lichens" = 15,
+                                                      "Moss" = 16,
+                                                      "Pasture/Hay" = 17,
+                                                      "Cultivated Crops" = 18,
+                                                      "Woody Wetlands" = 19,
+                                                      "Emergent Herbaceous Woodlands" = 20), 
+                                       selected = 1),
+                           
+                           numericInput("num", label = h5("(C) Area of Transformation (ha):"), value = 1)
+                         ), 
+
+                         mainPanel(
+                           strong("Transformation table is under construction!")
+                         ) 
+                       ), #end sidebar layout
                      
                      br(),
-                     hr(),
+
+                     h4(strong("Download Transformation Data")),
                      
-                     h4(strong("Download All Data")),
-                     p("Here, the user will also be able to download the data corresponding to the chart above, as
-                       modified using the above widgets. The download format would be a spreadsheet showing the post-transformation
-                       land use types, area (sq km), carbon storage (kg CO2e), and carbon storage (% of total) 
-                       within the mapped region. We may also include other data types such as delta area or delta carbon storage 
-                       compared to the original map or cost of the specified land transformation(s).
-                       This functionality would be useful to a user who, for instance, intends to produce a report
-                       on the most effective land transformations to increase carbon storage within the mapped region."),
+                     p(style="text-align: justify: font-size = 30px",
+                       "Use the button below to download the land transformation chart above as a spreadsheet
+                       (.csv). The spreadsheet will also include the land use classification, description,
+                       area (ha), and current carbon storage (in tons and as percentage of total). This data can
+                       be used to determine which land transformations would be most effective in boosting the
+                       carbon storage potential of the ROI."),
                      
-                     actionButton("action", label = "Download Carbon Storage Data"),
+                     # p("Here, the user will also be able to download the data corresponding to the chart above, as
+                     #   modified using the above widgets. The download format would be a spreadsheet showing the post-transformation
+                     #   land use types, area (sq km), carbon storage (kg CO2e), and carbon storage (% of total) 
+                     #   within the mapped region. We may also include other data types such as delta area or delta carbon storage 
+                     #   compared to the original map or cost of the specified land transformation(s).
+                     #   This functionality would be useful to a user who, for instance, intends to produce a report
+                     #   on the most effective land transformations to increase carbon storage within the mapped region."),
                      
-                     plotOutput("testplot"),
+                     actionButton("action", label = "Download Transformation Data")
                      
-                     
-                     br(),
-                     hr(),
-                     
-                     tags$blockquote("This Shiny app is still under continuous development. 
-                                     Please look forward to future updates!"),
-                     
-                     hr()),
           )
         )
-   #)
-#)
-### End of UI Block
+) ### End of UI Block
 
 
 ### Server Block
@@ -235,12 +299,17 @@ server <- function(input, output) {
   # tmap_options(check.and.fix = TRUE) 
   output$base_map <- renderTmap({
     tm_shape(lc_rast) +
-    tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
-              labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
-                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), 
-              n= 14, title = "Land Type") +
-    tm_shape(roi_vec) +
-    tm_borders(col = "black", lwd = 2)
+    tm_raster(style = "cat", 
+              palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", 
+                          "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
+              labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", 
+                         "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
+                         "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", 
+                         "Woody Wetlands", "Emergent Herbaceous Wetlands"), 
+              n= 14, 
+              title = "Land Use Type") #+
+    # tm_shape(roi_vec) +
+    # tm_borders(col = "black", lwd = 2)
   })
   
   
