@@ -15,6 +15,8 @@ library(terra) ### raster data functionality
 library(tmap)
 library(rgdal)
 library(stars)
+library(sp)
+library(terra)
 ```
 
 
@@ -285,6 +287,36 @@ roi_vec <- read_sf(here("nlcd_data",
   st_transform(st_crs(hawaii_rast))
 
 crs(roi_vec)
+plot(roi_vec)
 ```
 
+
+### Eleanor trying stuff
+
+```{r}
+# Read in shapefile
+hawaii_parks_vector <- read_sf(here("nlcd_data","hawaii_2001", "parks_state","parks_state.shp")) 
+
+# Filter for specific national park 
+ak_park <- hawaii_parks_vector %>% 
+   filter(NAME == "AHUPUAA O KAHANA STATE PARK") #this turns ak_park into an sp file because we used the filter function
+
+```
+
+
+```{r}
+# Define region of interest vector 
+roi_sf <- ak_park
+
+# Project vector file to match raster file
+roi_sf_proj <- st_transform(roi_sf, crs(lc_rast))
+
+# Crop raster 
+lc_roi_rast <- crop(lc_rast, roi_sf_proj)
+
+# Mask raster with vector file
+lc_roi_masked_rast <- mask(lc_roi_rast, roi_sf_proj)
+plot(lc_roi_masked_rast)
+
+```
 
