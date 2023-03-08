@@ -260,8 +260,9 @@ unique(hawaii_df$`Land Cover Class`)
 labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands")
 
 ```{r}
+#how to make NA transparent 
 tmap_mode("view")
-#tmap_options(check.and.fix = TRUE)
+tmap_options(check.and.fix = TRUE) #why do we have to have this line and can it go in the app?
 tm_shape(lc_rast) +
   tm_raster(style = "cat", palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", "Woody Wetlands", "Emergent Herbaceous Wetlands"), n= 14, title = "Land Type") +
   tm_shape(hawaii_x) +
