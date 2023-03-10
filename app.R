@@ -46,22 +46,23 @@ roi_area <- lc_rast_df %>%
   merge(., class_names, by.x = "land_cover_class", by.y = "class")
 
 roi_carb_per_area <- merge(roi_area, carbon_tph, 
-                           by.x = "land_cover_class", by.y = "class") %>% 
-  mutate(total_carbon_log_tons = log(area_hectares * ton_c_per_hectare)) #%>% 
+                           by.x = "land_cover_class", by.y = "class") %>%
+  mutate(total_carbon_tons = (area_hectares * ton_c_per_hectare)) %>% 
+  mutate(total_carbon_log_tons = log(total_carbon_tons)) #%>% 
 # mutate(error_low = 0.7*total_carbon_log_tons) %>% 
-# mutate(error_high = 1.3*total_carbon_log_tons)
+# mutate(error_high = 1.3*total_carbon_log_tons) ### Note to Caitlin: May want to add these in later.
 
-roi_carbon_table <- roi_carb_per_area %>% 
-  select(land_cover_class, area_hectares, description, compartment, total_carbon_log_tons) %>% 
-  pivot_wider(names_from = "compartment", values_from = "total_carbon_log_tons")
-roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
-                                         "description", 
-                                         "area_hectares", 
-                                         "above", 
-                                         "below", 
-                                         "soc", 
-                                         "dead_matter", 
-                                         "litter")]
+# roi_carbon_table <- roi_carb_per_area %>% 
+#   select(description, area_hectares, compartment, total_carbon_tons) %>% 
+#   pivot_wider(names_from = "compartment", values_from = "total_carbon_tons")
+# roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
+#                                          "description", 
+#                                          "area_hectares", 
+#                                          "above", 
+#                                          "below", 
+#                                          "soc", 
+#                                          "dead_matter", 
+#                                          "litter")]
 
 mycol <- rgb(0, 0, 255, max = 255, alpha = 0, names = "NA")
 color_map <- c("NA" = mycol, 
@@ -206,57 +207,59 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       
                       sidebarLayout(
                         sidebarPanel(
-                          selectInput("select", label = h5("(A) Transform FROM:"), 
-                                      choices = list("Open Water" = 1, 
-                                                     "Perennial Ice/Snow" = 2, 
-                                                     "Developed, Open Space" = 3,
-                                                     "Developed, Low Intensity" = 4,
-                                                     "Developed, Medium Intensity" = 5,
-                                                     "Developed, High Intensity" = 6,
-                                                     "Barren Land (Rock/Sand/Clay)" = 7,
-                                                     "Deciduous Forest" = 8,
-                                                     "Evergreen Forest" = 9,
-                                                     "Mixed Forest" = 10,
-                                                     "Dwarf Scrub" = 11,
-                                                     "Shrub/Scrub" = 12,
-                                                     "Grassland/Herbaceous" = 13,
-                                                     "Sedge/Herbaceous" = 14,
-                                                     "Lichens" = 15,
-                                                     "Moss" = 16,
-                                                     "Pasture/Hay" = 17,
-                                                     "Cultivated Crops" = 18,
-                                                     "Woody Wetlands" = 19,
-                                                     "Emergent Herbaceous Woodlands" = 20), 
-                                      selected = 1),
+                          selectInput("select_from", label = h5("(A) Transform FROM:"), 
+                                      choices = list("Open Water"= 11, 
+                                                     "Perennial Ice/Snow" = 12, 
+                                                     "Developed, Open Space" = 21,
+                                                     "Developed, Low Intensity" = 22,
+                                                     "Developed, Medium Intensity" = 23,
+                                                     "Developed, High Intensity" = 24,
+                                                     "Barren Land (Rock/Sand/Clay)" = 31,
+                                                     "Deciduous Forest" = 41,
+                                                     "Evergreen Forest" = 42,
+                                                     "Mixed Forest" = 43,
+                                                     "Dwarf Scrub" = 51,
+                                                     "Shrub/Scrub" = 52,
+                                                     "Grassland/Herbaceous" = 71,
+                                                     "Sedge/Herbaceous" = 72,
+                                                     "Lichens" = 73,
+                                                     "Moss" = 74,
+                                                     "Pasture/Hay" = 81,
+                                                     "Cultivated Crops" = 82,
+                                                     "Woody Wetlands" = 90,
+                                                     "Emergent Herbaceous Woodlands" = 95), 
+                                      selected = 11),
                           
-                          selectInput("select", label = h5("(B) Transform TO:"), 
-                                      choices = list("Open Water" = 1, 
-                                                     "Perennial Ice/Snow" = 2, 
-                                                     "Developed, Open Space" = 3,
-                                                     "Developed, Low Intensity" = 4,
-                                                     "Developed, Medium Intensity" = 5,
-                                                     "Developed, High Intensity" = 6,
-                                                     "Barren Land (Rock/Sand/Clay)" = 7,
-                                                     "Deciduous Forest" = 8,
-                                                     "Evergreen Forest" = 9,
-                                                     "Mixed Forest" = 10,
-                                                     "Dwarf Scrub" = 11,
-                                                     "Shrub/Scrub" = 12,
-                                                     "Grassland/Herbaceous" = 13,
-                                                     "Sedge/Herbaceous" = 14,
-                                                     "Lichens" = 15,
-                                                     "Moss" = 16,
-                                                     "Pasture/Hay" = 17,
-                                                     "Cultivated Crops" = 18,
-                                                     "Woody Wetlands" = 19,
-                                                     "Emergent Herbaceous Woodlands" = 20), 
-                                      selected = 1),
+                          selectInput("select_to", label = h5("(B) Transform TO:"), 
+                                      choices = list("Open Water"= 11, 
+                                                     "Perennial Ice/Snow" = 12, 
+                                                     "Developed, Open Space" = 21,
+                                                     "Developed, Low Intensity" = 22,
+                                                     "Developed, Medium Intensity" = 23,
+                                                     "Developed, High Intensity" = 24,
+                                                     "Barren Land (Rock/Sand/Clay)" = 31,
+                                                     "Deciduous Forest" = 41,
+                                                     "Evergreen Forest" = 42,
+                                                     "Mixed Forest" = 43,
+                                                     "Dwarf Scrub" = 51,
+                                                     "Shrub/Scrub" = 52,
+                                                     "Grassland/Herbaceous" = 71,
+                                                     "Sedge/Herbaceous" = 72,
+                                                     "Lichens" = 73,
+                                                     "Moss" = 74,
+                                                     "Pasture/Hay" = 81,
+                                                     "Cultivated Crops" = 82,
+                                                     "Woody Wetlands" = 90,
+                                                     "Emergent Herbaceous Woodlands" = 95), 
+                                      selected = 11),
                           
-                          numericInput("num", label = h5("(C) Area of Transformation (ha):"), value = 1)
+                          numericInput("area_transform", label = h5("(C) Area of Transformation (ha):"), value = 0),
+                          
+                          actionButton("recalculate", "Recalculate")
                         ), 
                         
                         mainPanel(
-                          strong("Transformation table is under construction!")
+                          dataTableOutput("updated_carbon_table")
                         ) 
                       ), #end sidebar layout
                       
@@ -279,7 +282,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       #   This functionality would be useful to a user who, for instance, intends to produce a report
                       #   on the most effective land transformations to increase carbon storage within the mapped region."),
                       
-                      actionButton("action", label = "Download")
+                      downloadButton("download", label = "Download")
                       
                )
                 )
@@ -371,7 +374,35 @@ server <- function(input, output) {
            fill = "Compartment")
   })
   
-  # output$carbon_table_test <- renderTable({roi_carbon_table})
+  reactive_carbon_table <- eventReactive(input$recalculate, {
+    selectfrom <- input$select_from
+    selectto <- input$select_to
+    areatransform <- input$area_transform
+    updated_carbon_table <- roi_carb_per_area %>% 
+      mutate(area_hectares = ifelse(land_cover_class == selectfrom, area_hectares - areatransform, area_hectares)) %>% 
+      mutate(area_hectares = ifelse(land_cover_class == selectto, area_hectares + areatransform, area_hectares)) %>% 
+      mutate(total_carbon_tons = area_hectares * ton_c_per_hectare) %>% 
+      mutate(total_carbon_tons_log = log(total_carbon_tons)) %>% 
+      select(description, area_hectares, compartment, total_carbon_tons) %>% 
+      pivot_wider(names_from = "compartment", values_from = "total_carbon_tons") %>% 
+      mutate(total_c = above + below + soc + dead_matter + litter)
+    summary_row <- data.frame(list(description = "All Land Use Types", 
+                                   area_hectares = sum(updated_carbon_table$area_hectares), 
+                                   above = sum(updated_carbon_table$above), 
+                                   below = sum(updated_carbon_table$below), 
+                                   soc = sum(updated_carbon_table$soc),
+                                   dead_matter = sum(updated_carbon_table$dead_matter),
+                                   litter = sum(updated_carbon_table$litter),
+                                   total_c = sum(updated_carbon_table$total_c)))
+    updated_carbon_table <- rbind(updated_carbon_table, summary_row)
+    updated_carbon_table
+  },ignoreNULL = FALSE)
+  
+  output$updated_carbon_table <- renderDataTable({
+    reactive_carbon_table()
+  })
+  
+  # output$carbon_table_test <- renderTable(roi_carbon_table)
   # 
   # output$carbon_table <- function() {
   #   knitr::kable(roi_carbon_table, 
@@ -386,6 +417,13 @@ server <- function(input, output) {
   #         align = "llcccccr",
   #         capton = "Total Carbon Stored (tons) per Compartment in ROI")
   # }
+  
+  output$download <- downloadHandler(
+    filename = "land_transformation.csv",
+    content = function(file){
+      write.csv(reactive_carbon_table(), file)
+    }
+  )
   
 }
 
