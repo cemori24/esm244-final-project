@@ -15,6 +15,7 @@ library(readxl)
 library(ggplot2)
 library(knitr)
 
+tmap_options(check.and.fix = TRUE)
 ### Data Files
 lc_rast <- here("nlcd_data",
                 "lc_rast_coarse.tif") %>% 
@@ -62,7 +63,8 @@ roi_carbon_table <- roi_carbon_table[, c("land_cover_class",
                                          "dead_matter", 
                                          "litter")]
 
-color_map <- c("NA" = "lightblue", 
+mycol <- rgb(0, 0, 255, max = 255, alpha = 0, names = "NA")
+color_map <- c("NA" = mycol, 
                "Open Water" = "blue", 
                "Developed, Open Space" = "lightpink", 
                "Developed, Low Intensity" = "coral1", 
@@ -80,63 +82,52 @@ color_map <- c("NA" = "lightblue",
 ### Start of UI Block
 ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                 navbarPage(
-                  "Carbon Storage Calculator",
-                  
+                  "Land Use Carbon Stock & Conversion",
                   ### TAB 1: Info, Upload Button                                    
-                  tabPanel("Upload Shapefile",
-                           
-                           fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
-                                    "Note: This site is still under construction (last updated: 2023-03-03).
-                             Vector upload functionality is still missing."),
-                           
-                           h4(strong("Welcome!")),
-                           
-                           h5("This app was created by students of the Bren School to assist with analysis of carbon storage 
-                       potential of geographic regions. Users can (1) upload a vector polygon of their Region of 
-                       Interest (ROI) within the US, (2) view current land use data, and (3) view current carbon 
-                       storage and opportunities for improvement."),
-                       h5(strong("To begin, please upload a vector polygon (.tif, .img, .shp) outlining your ROI.  The file 
-                       should NOT include any other polygons, because all polygons will be used for carbon storage
-                       calculations.")),
-                       
-                       br(), 
-                       
-                       fluidRow(
-                         column(12, 
-                                align = "center", 
-                                fileInput("file", label = div(style = "font-size:16px", "Upload ROI Vector")))
-                       ),
-                       
-                       br(),
-                       
-                       # fluidPage(
-                       #   
-                       #   hr(),
-                       #   fluidRow(column(4, verbatimTextOutput("value"))),
-                       #   
-                       #   
-                       # ),
-                       # sidebarLayout(
-                       #   sidebarPanel(
-                       #     fileInput("file", label = div(style = "font-size:20px", "Upload Area of Interest File"))
-                       #   ), #end sidebar panel
-                       #   
-                       #   mainPanel(
-                       #     tmapOutput('base_map') #, height = '600px')#, 
-                       #   #textOutput('pic_dim_print')
-                       #   ) #end main panel
-                       # ), #end sidebar layout
-                       
-                       hr(),
-                       tags$blockquote(HTML("<p><b>Data Sources</b></p><p><i>Land Use Data:</i>
-                                    Homer, Collin G., Huang, Chengquan, Yang, Limin, Wylie, 
-                                    Bruce K., Coan, Michael J., Development of a 2001 National 
-                                    Land Cover Database for the United States: Photogrammetric 
-                                    Engineering and Remote Sensing, v. 70, no. 7, p. 829–840, at 
+                  tabPanel(
+                    'Upload Data',
+                    fluidRow(""),
+                    fluidRow(h5("This App will allow users to upload a vector polygon of their interest area, for example
+                                 a county, national park, or private land, and in return will be shown how much 
+                                 cabon is being stored in that area. The carbon storage will be broken down
+                                 by the different land types in interest area, and will distinguish above and below ground 
+                                 carbon stocks. Users will also be able to how their carbon storage potential 
+                                 would change by changing land types.")
+                    ),
+                    fluidPage(
+                      
+                      hr(),
+                      fluidRow(column(4, verbatimTextOutput("value"))),
+                      h5("This app was created by students of the Bren School to assist with analysis of carbon storage 
+                        potential of geographic regions. Users can (1) upload a vector polygon of their Region of 
+                        Interest (ROI) within the US, (2) view current land use data, and (3) view current carbon 
+                        storage and opportunities for improvement."),
+                      
+                      br(),
+                      
+                    ),
+                    sidebarLayout(
+                      sidebarPanel( h5(strong("To begin, please upload a vector polygon (.tif, .img, .shp) outlining your ROI.  The file 
+                        should NOT include any other polygons, because all polygons will be used for carbon storage
+                        calculations.")),
+                        fileInput("file", label = h3("Upload Polygon (.shp)"))
+                      ), #end sidebar panel
+                      
+                      mainPanel(
+                        tmapOutput('roi_map', height = '600px'), 
+                        textOutput('pic_dim_print'),
+                      ) #end main panel
+                    ), #end sidebar layout
+                    hr(),
+                    tags$blockquote(HTML("<p><b>Data Sources</b></p><p><i>Land Use Data:</i>
+                                     Homer, Collin G., Huang, Chengquan, Yang, Limin, Wylie, 
+                                     Bruce K., Coan, Michael J., Development of a 2001 National 
+                                     Land Cover Database for the United States: Photogrammetric 
+                                     Engineering and Remote Sensing, v. 70, no. 7, p. 829–840, at
                                     https://doi.org/10.14358/PERS.70.7.829.</p><p><i>Hawaii State 
                                     Park Vector File:</i> Hawaii Statewide GIS Program at
                                     https://planning.hawaii.gov/gis/download-gis-data-expanded/.</p>")),
-                       hr(),
+                     hr(),
                   ), #end info tab panel
                   
                   
@@ -298,20 +289,26 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 ### Server Block
 server <- function(input, output) {
   
-  # tmap_options(check.and.fix = TRUE) 
   output$base_map <- renderTmap({
+    tm_basemap(leaflet::providers$Stamen.Watercolor) +
     tm_shape(lc_rast) +
       tm_raster(style = "cat", 
-                palette = c("lightblue", "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", 
+                palette = c(mycol, "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", 
                                        "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
                                        labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", 
                                                   "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
                                                   "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", 
                                                   "Woody Wetlands", "Emergent Herbaceous Wetlands"), 
                 n= 14, 
-                title = "Land Use Type") #+
-    # tm_shape(roi_vec) +
-    # tm_borders(col = "black", lwd = 2)
+                title = "Land Use Type") +
+     tm_shape(roi_vec) +
+     tm_borders(col = "black", lwd = 2)
+  })
+  
+  output$roi_map <- renderTmap({
+    tm_basemap(leaflet::providers$OpenStreetMap.Mapnik) +
+      tm_shape(roi_vec) +
+      tm_borders(col = "black", lwd = 2)
   })
   
   
