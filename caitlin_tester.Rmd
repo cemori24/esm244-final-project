@@ -55,13 +55,15 @@ roi_area <- lc_rast_df %>%
   merge(., class_names, by.x = "land_cover_class", by.y = "class")
 
 roi_carb_per_area <- merge(roi_area, carbon_tph, 
-                           by.x = "land_cover_class", by.y = "class") %>% 
-  mutate(total_carbon_tons_log = log(area_hectares * ton_c_per_hectare)) 
+                           by.x = "land_cover_class", by.y = "class") %>%
+  mutate(total_carbon_tons = (area_hectares * ton_c_per_hectare)) %>% 
+  mutate(total_carbon_log_tons = log(total_carbon_tons)) #%>% 
+# mutate(error_low = 0.7*total_carbon_log_tons) %>% 
+# mutate(error_high = 1.3*total_carbon_log_tons) ### Note to Caitlin: May want to add these in later.
 
 roi_carbon_table <- roi_carb_per_area %>% 
-  select(land_cover_class, area_hectares, description, compartment, total_carbon_tons_log) %>% 
-  pivot_wider(names_from = "compartment", values_from = "total_carbon_tons_log")
-
+  select(land_cover_class, area_hectares, description, compartment, total_carbon_tons) %>% 
+  pivot_wider(names_from = "compartment", values_from = "total_carbon_tons")
 roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
                                          "description", 
                                          "area_hectares", 
@@ -71,7 +73,49 @@ roi_carbon_table <- roi_carbon_table[, c("land_cover_class",
                                          "dead_matter", 
                                          "litter")]
 
+color_map <- c("NA" = "lightblue", 
+               "Open Water" = "blue", 
+               "Developed, Open Space" = "lightpink", 
+               "Developed, Low Intensity" = "coral1", 
+               "Developed, Medium Intensity" = "red", 
+               "Developed, High Intensity" = "darkred", 
+               "Barren Land (Rock/Sand/Clay)" = "tan", 
+               "Evergreen Forest" = "darkgreen", 
+               "Shrub/Scrub" = "darkgoldenrod3", 
+               "Grassland/Herbaceous" = "darkkhaki", 
+               "Pasture/Hay" = "khaki1", 
+               "Cultivated Crops" = "brown", 
+               "Woody Wetlands" = "lightcyan", 
+               "Emergent Herbaceous Wetlands" = "lightseagreen")
+
 ```
+
+```{r}
+updated_carbon_table <- roi_carb_per_area
+selectto <- "Open Water"
+selectfrom <- "Evergreen Forest"
+areatransform <- 10000
+updated_carbon_table <- roi_carb_per_area %>% 
+      mutate(area_hectares = ifelse(land_cover_class == selectfrom, area_hectares - areatransform, area_hectares)) %>% 
+      mutate(area_hectares = ifelse(land_cover_class == selectto, area_hectares + areatransform, area_hectares)) %>% 
+      mutate(total_carbon_tons = area_hectares * ton_c_per_hectare) %>% 
+      mutate(total_carbon_tons_log = log(total_carbon_tons)) %>% 
+      select(description, area_hectares, compartment, total_carbon_tons) %>% 
+      pivot_wider(names_from = "compartment", values_from = "total_carbon_tons") %>% 
+      mutate(total_c = above + below + soc + dead_matter + litter)
+    summary_row <- data.frame(list(description = "All Land Use Types", 
+                                   area_hectares = sum(updated_carbon_table$area_hectares), 
+                                   above = sum(updated_carbon_table$above), 
+                                   below = sum(updated_carbon_table$below), 
+                                   soc = sum(updated_carbon_table$soc),
+                                   dead_matter = sum(updated_carbon_table$dead_matter),
+                                   litter = sum(updated_carbon_table$litter),
+                                   total_c = sum(updated_carbon_table$total_c)))
+    updated_carbon_table <- rbind(updated_carbon_table, summary_row)
+    updated_carbon_table
+```
+
+
 
 ```{r}
  kable(roi_carbon_table, 
