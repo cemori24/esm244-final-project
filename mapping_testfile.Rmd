@@ -131,8 +131,23 @@ plot(hawaii_1_rast, main = 'hawaii Landcover Map', axes = FALSE)
 
 ```{r}
 hawaii_parks_vector <- read_sf(here("nlcd_data","hawaii_2001", "parks_state","parks_state.shp")) 
-hawaii_parks_vector
+#hawaii_parks_vector
 ```
+
+
+```{r}
+write_sf(hawaii_parks_vector, 'roi.gpkg')
+roi_gpkg<- read_sf('roi.gpkg')
+
+```
+
+
+```{r}
+tm_basemap(leaflet::providers$OpenStreetMap.Mapnik) +
+        tm_shape(roi_gpkg) +
+        tm_borders(col = "black", lwd = 2)
+```
+
 
 ```{r}
 crs(hawaii_rast)
