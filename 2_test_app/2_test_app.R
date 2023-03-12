@@ -15,6 +15,7 @@ library(ggplot2)
 library(knitr)
 library(sf)
 
+tmap_options(check.and.fix = TRUE)
 
 lc_rast <- here("2_test_app",
                 "lc_rast_coarse.tif") %>% 
@@ -41,24 +42,33 @@ ui <- fluidPage(
 
 server <- function(input, output) {
  
+  
+  # roi_poly <- reactive({
+  #   req(input$poly)
+  #   read_sf(input$poly$datapath)
+  #  # readOGR(input$poly$datapath,layers[geom])
+  # })
 roi_poly <- reactive({
-  #req(input$poly)
-  (read_sf(input$poly$datapath)) %>% 
-    st_transform(st_crs(hawaii_rast))
-      #st_zm() %>% 
-      
+  req(input$poly)
+  (read_sf(input$poly$datapath)) %>%
+    st_as_sf %>% 
+    st_transform(st_crs(hawaii_rast)) 
+
   })
   
-    
-     
+     # output$base_map <- renderPlot({
+     #   req(input$poly)
+     #   #print(roi_poly)
+     #   plot(roi_poly)
+     # })
     
     output$base_map <- renderTmap({
-      
+
        req(input$poly)
       tm_basemap(leaflet::providers$OpenStreetMap.Mapnik) +
         tm_shape(roi_poly) +
         tm_borders(col = "black", lwd = 2)
-    
+
     })
       
      
