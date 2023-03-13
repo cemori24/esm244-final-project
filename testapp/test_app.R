@@ -5,6 +5,11 @@ library(leaflet)
 library(here)
 library(sf)
 library(rgdal)
+library(DT)
+library(dygraphs)
+library(xts)
+
+browser()
 
 # Data files
 # Base map land cover raster
@@ -38,11 +43,13 @@ server <- function(input, output) {
     if (is.null(input$filemap)) {
       return(NULL)
     } else {
+      
     # shpdf is a data.frame with the name, size, type and datapath of the uploaded files
       shpdf <- input$filemap
       
     # Name of the temporary directory where files are uploaded
     tempdirname <- dirname(shpdf$datapath[1])
+    browser()
     
     # Rename files
     for (i in 1:nrow(shpdf)) {
@@ -54,10 +61,8 @@ server <- function(input, output) {
     
     # Now we read the shapefile with readOGR() of rgdal package
     # passing the name of the file with .shp extension.
-    user_shp <- readOGR(paste(tempdirname,
-                         shpdf$name[grep(pattern = "*.shp$", shpdf$name)],
-                         sep = "/"
-    ))
+    user_shp <- readOGR(tempdirname, "cty_council_dist_mau")
+   
     return(user_shp)
     }
   })

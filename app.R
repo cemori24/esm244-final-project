@@ -21,14 +21,17 @@ lc_rast <- here("nlcd_data",
                 "lc_rast_coarse.tif") %>% 
   terra::rast()
 
+# likely won't need this here anymore
 lc_rast_df <- as.data.frame(lc_rast, xy = TRUE)
 
-roi_vec <- read_sf(here("nlcd_data",
+#changing roi_vec to roi_sf_default
+roi_sf_default <- read_sf(here("nlcd_data",
                         "hawaii_2001", 
                         "parks_state",
                         "parks_state.shp")) %>% 
   st_transform(st_crs(lc_rast))
 
+### carbon tons C per hectare data frame
 carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hectare.xlsx")) %>% 
   clean_names() %>% 
   select(class:soc) %>% 
@@ -36,9 +39,11 @@ carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hecta
                names_to = "compartment", 
                values_to = "ton_c_per_hectare")
 
+### land cover class descriptions 
 class_names <- read_xlsx(here("carbon_stock_cfs", "class_descriptions_key.xlsx")) %>% 
   clean_names()
 
+# this needs to be reactive 
 roi_area <- lc_rast_df %>% 
   clean_names() %>%
   group_by(land_cover_class) %>%
@@ -111,7 +116,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       sidebarPanel( h5(strong("To begin, please upload a vector polygon (.tif, .img, .shp) outlining your ROI.  The file 
                         should NOT include any other polygons, because all polygons will be used for carbon storage
                         calculations.")),
-                        fileInput("file", label = h3("Upload Polygon (.shp)"))
+                        fileInput(inputId = "user_gpkg",
+                                  label = "Upload geopackage",
+                                  multiple = FALSE,
+                                  accept = '.gpkg')
                       ), #end sidebar panel
                       
                       mainPanel(
@@ -292,6 +300,41 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
 ### Server Block
 server <- function(input, output) {
   
+  ### Read in user uploaded geopackage
+  user_gpkg <- reactive({
+    if (is.null(input$user_gpkg)) {
+      return(NULL)
+    }
+    layer_name <- ogrListLayers(dsn = input$user_gpkg$datapath)[1] # Get the first layer name
+    readOGR(dsn = input$user_gpkg$datapath, layer = layer_name)
+  })
+ 
+  ### Create a reactive object for the roi_sf based on user upload or default
+  roi_sf <- reactive({
+    if (is.null(user_gpkg())) {
+      return(roi_sf_default)
+    } else {
+      st_transform(as(user_gpkg(), "sf"), crs(lc_rast)) 
+    }
+  })
+  
+  ### Mask raster with vector file
+  ### This is getting the land cover data from lc_rast for the ROI
+  lc_roi_rast <- reactive({
+    if (!is.null(roi_sf())) {
+      mask(lc_rast, roi_sf())
+    }
+  })
+  
+  ### Convert to df for manipulation
+  lc_roi_df <- reactive({
+    as.data.frame(lc_roi_rast(), xy = TRUE)
+  }) 
+ 
+  ### Make carbon table stuff reactive 
+  
+  
+  ### Interactive land cover map
   output$base_map <- renderTmap({
     tm_basemap(leaflet::providers$Stamen.Watercolor) +
     tm_shape(lc_rast) +
@@ -304,13 +347,15 @@ server <- function(input, output) {
                                                   "Woody Wetlands", "Emergent Herbaceous Wetlands"), 
                 n= 14, 
                 title = "Land Use Type") +
-     tm_shape(roi_vec) +
+     tm_shape(roi_sf()) +
      tm_borders(col = "black", lwd = 2)
   })
   
+  
+  ### Interactive streetmap 
   output$roi_map <- renderTmap({
     tm_basemap(leaflet::providers$OpenStreetMap.Mapnik) +
-      tm_shape(roi_vec) +
+      tm_shape(roi_sf()) +
       tm_borders(col = "black", lwd = 2)
   })
   
