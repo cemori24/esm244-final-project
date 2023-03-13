@@ -43,31 +43,6 @@ carbon_tph <- read_xlsx(here("carbon_stock_cfs", "carbon_storage_ton_C_per_hecta
 class_names <- read_xlsx(here("carbon_stock_cfs", "class_descriptions_key.xlsx")) %>% 
   clean_names()
 
-# this needs to be reactive 
-roi_area <- lc_rast_df %>% 
-  clean_names() %>%
-  group_by(land_cover_class) %>%
-  tally(name = "area_hectares") %>% 
-  merge(., class_names, by.x = "land_cover_class", by.y = "class")
-
-roi_carb_per_area <- merge(roi_area, carbon_tph, 
-                           by.x = "land_cover_class", by.y = "class") %>%
-  mutate(total_carbon_tons = (area_hectares * ton_c_per_hectare)) %>% 
-  mutate(total_carbon_log_tons = log(total_carbon_tons)) #%>% 
-# mutate(error_low = 0.7*total_carbon_log_tons) %>% 
-# mutate(error_high = 1.3*total_carbon_log_tons) ### Note to Caitlin: May want to add these in later.
-
-# roi_carbon_table <- roi_carb_per_area %>% 
-#   select(description, area_hectares, compartment, total_carbon_tons) %>% 
-#   pivot_wider(names_from = "compartment", values_from = "total_carbon_tons")
-# roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
-#                                          "description", 
-#                                          "area_hectares", 
-#                                          "above", 
-#                                          "below", 
-#                                          "soc", 
-#                                          "dead_matter", 
-#                                          "litter")]
 
 mycol <- rgb(0, 0, 255, max = 255, alpha = 0, names = "NA")
 color_map <- c("NA" = mycol, 
@@ -326,13 +301,6 @@ server <- function(input, output) {
     }
   })
   
-  ### Convert to df for manipulation
-  lc_roi_df <- reactive({
-    as.data.frame(lc_roi_rast(), xy = TRUE)
-  }) 
- 
-  ### Make carbon table stuff reactive 
-  
   
   ### Interactive land cover map
   output$base_map <- renderTmap({
@@ -382,7 +350,7 @@ server <- function(input, output) {
   
   
   output$piechart <- renderPlot({
-    ggplot(roi_area, aes(x = "", y = area_hectares, fill = description)) +
+    ggplot(roi_area(), aes(x = "", y = area_hectares, fill = description)) +
       geom_bar(width = 1, stat = "identity", color='black', size=.3) +
       coord_polar("y", start = 0) +
       scale_fill_manual(values = color_map) + # Use the color_map vector to specify colors
@@ -391,9 +359,52 @@ server <- function(input, output) {
       labs(fill = "Land Use Cover", title = "Land Use Cover Percentage")
   })
   
+  ### Carbon tab calculations
+  ### Convert lc_roi_rast() to df for manipulation
+  lc_roi_df <- reactive({
+    as.data.frame(lc_roi_rast(), xy = TRUE)
+  }) 
+  
+  ### roi_area reactive expression
+  roi_area <- reactive({
+    req(lc_roi_df())
+    
+    lc_roi_df() %>% 
+      clean_names() %>%
+      group_by(land_cover_class) %>%
+      tally(name = "area_hectares") %>% 
+      merge(., class_names, by.x = "land_cover_class", by.y = "class")
+  })
+  
+  ### roi_carb_per_area reactive expression
+  roi_carb_per_area <- reactive({
+    merge(roi_area(), carbon_tph, 
+          by.x = "land_cover_class", by.y = "class") %>%
+      mutate(total_carbon_tons = (area_hectares * ton_c_per_hectare)) %>% 
+      mutate(total_carbon_log_tons = log(total_carbon_tons))
+  })
+  
+  #%>% 
+  # mutate(error_low = 0.7*total_carbon_log_tons) %>% 
+  # mutate(error_high = 1.3*total_carbon_log_tons) ### Note to Caitlin: May want to add these in later.
+  
+  # roi_carbon_table <- roi_carb_per_area %>% 
+  #   select(description, area_hectares, compartment, total_carbon_tons) %>% 
+  #   pivot_wider(names_from = "compartment", values_from = "total_carbon_tons")
+  # roi_carbon_table <- roi_carbon_table[, c("land_cover_class", 
+  #                                          "description", 
+  #                                          "area_hectares", 
+  #                                          "above", 
+  #                                          "below", 
+  #                                          "soc", 
+  #                                          "dead_matter", 
+  #                                          "litter")]
+  
+  
+  
   output$carbon_plot <- renderPlot({
     ggplot() +
-      geom_col(data = roi_carb_per_area, 
+      geom_col(data = roi_carb_per_area(), 
                mapping = aes(x = description, 
                              y = total_carbon_log_tons, 
                              fill = compartment
@@ -423,7 +434,7 @@ server <- function(input, output) {
     selectfrom <- input$select_from
     selectto <- input$select_to
     areatransform <- input$area_transform
-    updated_carbon_table <- roi_carb_per_area %>% 
+    updated_carbon_table <- roi_carb_per_area() %>% 
       mutate(area_hectares = ifelse(land_cover_class == selectfrom, area_hectares - areatransform, area_hectares)) %>% 
       mutate(area_hectares = ifelse(land_cover_class == selectto, area_hectares + areatransform, area_hectares)) %>% 
       mutate(total_carbon_tons = area_hectares * ton_c_per_hectare) %>% 
