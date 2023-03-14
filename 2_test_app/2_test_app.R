@@ -52,7 +52,7 @@ roi_poly <- reactive({
   req(input$poly)
   (read_sf(input$poly$datapath)) %>%
     st_as_sf %>% 
-    st_transform(st_crs(hawaii_rast)) 
+    st_transform(st_crs(lc_rast)) 
 
   })
   
@@ -66,7 +66,7 @@ roi_poly <- reactive({
 
        req(input$poly)
       tm_basemap(leaflet::providers$OpenStreetMap.Mapnik) +
-        tm_shape(roi_poly) +
+        tm_shape(roi_poly()) +
         tm_borders(col = "black", lwd = 2)
 
     })

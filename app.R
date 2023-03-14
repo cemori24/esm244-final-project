@@ -21,6 +21,8 @@ lc_rast <- here("nlcd_data",
                 "lc_rast_coarse.tif") %>% 
   terra::rast()
 
+lc_rast_sub <-clamp(lc_rast, lower=1, values=FALSE)
+
 # likely won't need this here anymore
 lc_rast_df <- as.data.frame(lc_rast, xy = TRUE)
 
@@ -88,9 +90,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       
                     ),
                     sidebarLayout(
-                      sidebarPanel( h5(strong("To begin, please upload a vector polygon (.tif, .img, .shp) outlining your ROI.  The file 
-                        should NOT include any other polygons, because all polygons will be used for carbon storage
-                        calculations.")),
+                      sidebarPanel( h5(strong("To begin, please upload a Geopackage(.gpkg) containging a polygon(s) that outlines
+                                              your ROI.  Please note: all polygons in uploaded Geopackae will be used for carbon storage calculations.")),
                         fileInput(inputId = "user_gpkg",
                                   label = "Upload geopackage",
                                   multiple = FALSE,
@@ -305,11 +306,11 @@ server <- function(input, output) {
   ### Interactive land cover map
   output$base_map <- renderTmap({
     tm_basemap(leaflet::providers$Stamen.Watercolor) +
-    tm_shape(lc_rast) +
+    tm_shape(lc_rast_sub) +
       tm_raster(style = "cat", 
-                palette = c(mycol, "blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", 
+                palette = c("blue", "lightpink", "coral1", "red", "darkred", "tan", "darkgreen", 
                                        "darkgoldenrod3", "darkkhaki", "khaki1", "brown", "lightcyan", "lightseagreen"), 
-                                       labels = c("NA", "Open Water", "Developed, Open Space", "Developed, Low Intensity", 
+                                       labels = c("Open Water", "Developed, Open Space", "Developed, Low Intensity", 
                                                   "Developed, Medium Intensity", "Developed, High Intensity", "Barren Land (Rock/Sand/Clay)", 
                                                   "Evergreen Forest", "Shrub/Scrub", "Grassland/Herbaceous", "Pasture/Hay", "Cultivated Crops", 
                                                   "Woody Wetlands", "Emergent Herbaceous Wetlands"), 
