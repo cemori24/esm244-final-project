@@ -63,55 +63,69 @@ color_map <- c("NA" = mycol,
                "Emergent Herbaceous Wetlands" = "lightseagreen")
 
 ### Start of UI Block
-ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
+ui <- fluidPage( theme = bs_theme(bootswatch = "sandstone"),
                 navbarPage(
                   "Land Use Carbon Stock & Conversion",
                   ### TAB 1: Info, Upload Button                                    
                   tabPanel(
                     'Upload Data',
-                    fluidRow(""),
-                    fluidRow(h5("This App will allow users to upload a vector polygon of their interest area, for example
-                                 a county, national park, or private land, and in return will be shown how much 
-                                 cabon is being stored in that area. The carbon storage will be broken down
-                                 by the different land types in interest area, and will distinguish above and below ground 
-                                 carbon stocks. Users will also be able to how their carbon storage potential 
-                                 would change by changing land types.")
-                    ),
-                    fluidPage(
-                      
-                      hr(),
-                      fluidRow(column(4, verbatimTextOutput("value"))),
-                      h5("This app was created by students of the Bren School to assist with analysis of carbon storage 
-                        potential of geographic regions. Users can (1) upload a vector polygon of their Region of 
-                        Interest (ROI) within the US, (2) view current land use data, and (3) view current carbon 
-                        storage and opportunities for improvement."),
-                      
+               
+                    h5(span(strong("Land Use Carbon Stock & Conversion"), style = "color:teal"),"was created by students of the Bren School to
+                      assist with analysis of carbon storage potential in Hawaii. By default the app will
+                      perform carbon stock analysis on all of the state parks in Hawaii, broken down by the
+                      different land types in the parks, and distinguishing above and below ground carbon storage.",
                       br(),
-                      
-                    ),
+                      strong("Users can:"), 
+                      br(),
+                      strong("(1)"), 
+                         "upload a Geopackage containing polygons(s) outlining a specific region of interest
+                          (ROI) they want the analysis performed on,",
+                      br(),
+                      strong("(2)"),
+                      "view current land use data, and",
+                      br(),
+                      strong("(3)"),"view current carbon storage and model opportunities for improvement."
+                   ),
+                   
+                   hr(),
+                   br(),
+
                     sidebarLayout(
-                      sidebarPanel( h5(strong("To begin, please upload a Geopackage(.gpkg) containging a polygon(s) that outlines
-                                              your ROI.  Please note: all polygons in uploaded Geopackae will be used for carbon storage calculations.")),
+                      sidebarPanel( width = 3, h6("To begin, please upload a Geopackage(.gpkg) containging a polygon(s) that outlines
+                                              your ROI.  Please note: all polygons in uploaded Geopackae will be used for carbon storage calculations."),
                         fileInput(inputId = "user_gpkg",
-                                  label = "Upload geopackage",
+                                  label = strong("Upload geopackage"),
                                   multiple = FALSE,
-                                  accept = '.gpkg')
+                                  accept = '.gpkg'),
+                        tags$style("
+             .btn-file {  
+             background-color:teal; 
+             border-color: teal; 
+             }
+
+             .progress-bar {
+             background-color: teal;
+             }
+
+             ")
                       ), #end sidebar panel
                       
                       mainPanel(
-                        tmapOutput('roi_map', height = '600px'), 
-                        textOutput('pic_dim_print'),
+                        tmapOutput('roi_map', width = '1030px'), 
                       ) #end main panel
                     ), #end sidebar layout
                     hr(),
-                    tags$blockquote(HTML("<p><b>Data Sources</b></p><p><i>Land Use Data:</i>
+             tags$blockquote(p(span(strong("Data Sources"), style = "color:teal"), br(),
+                               "Land Use Data:
                                      Homer, Collin G., Huang, Chengquan, Yang, Limin, Wylie, 
                                      Bruce K., Coan, Michael J., Development of a 2001 National 
                                      Land Cover Database for the United States: Photogrammetric 
                                      Engineering and Remote Sensing, v. 70, no. 7, p. 829–840, at
-                                    https://doi.org/10.14358/PERS.70.7.829.</p><p><i>Hawaii State 
-                                    Park Vector File:</i> Hawaii Statewide GIS Program at
+                                    https://doi.org/10.14358/PERS.70.7.829.", br(),
+                               "Hawaii State 
+                                    Park Vector File: Hawaii Statewide GIS Program at
                                     https://planning.hawaii.gov/gis/download-gis-data-expanded/.</p>")),
+                   
                      hr(),
                   ), #end info tab panel
                   
@@ -119,12 +133,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                   
                   ### TAB 2: Land Cover Map, Pie Chart          
                   tabPanel("Shapefile Visualization", 
-                           
-                           fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
-                                    "Note: This site is still under construction (last updated: 2023-03-03).
-                      We are still working on getting the default vector to display in tmap."),
                       
-                      h4(strong("Map of ROI by Land Use Classification")),
+                      h4(span(strong("Map of ROI by Land Use Classification"), style = "color:teal")),
                       p(style="text-align: justify; font-size = 30px",
                         "The map below shows the ROI on top of a base map that is colored according to NLCD land
                use classifications, with each pixel representing 1 hectare (100m x 100m). See the legend
@@ -134,7 +144,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                
                br(),
                
-               h4(strong("Chart of Land Use Within ROI")),
+               h4(span(strong("Chart of Land Use Within ROI"), style="color:teal")),
                p(style="text-align: justify; font-size = 30px",
                  "Land use classifications within the ROI are broken down in the chart below."),
                
@@ -155,13 +165,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                
                ### TAB 3: Carbon Stock Bar Chart, Table, Transformations            
                tabPanel("Carbon Storage Analysis", 
-                        
-                        fluidRow(style='text-align: left; text-color: red; color: red; font-size: 100%;', 
-                                 "Note: This site is still under construction (last updated: 2023-03-03).
-                      We still need to insert a table and enable user manipulation of the data, plus
-                      (possibly) a data download button. Plot also lacks error bars."),
                       
-                      h4(strong("Carbon Storage in ROI by Compartment")),
+                      h4(span(strong("Carbon Storage in ROI by Compartment"), style="color:teal")),
                       p(style="text-align: justify; font-size = 30px",
                         "The chart below shows current carbon storage for each land use type within the ROI.
                        See the legend for a breakdown of carbon storage by compartment. The five compartments 
@@ -182,7 +187,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       
                       br(),
                       
-                      h4(strong("Land Transformation Analysis (Interactive Tool)")),
+                      h4(span(strong("Land Transformation Analysis (Interactive Tool)"), style="color:teal")),
                       p(style="text-align: justify: font-size = 30px",
                         "This tool can be used to calculate the impact of land transformations on the carbon
                        stocks plotted above. Please first select a CURRENT land use type (A), then select a 
@@ -190,7 +195,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                        than or equal to the area of the CURRENT land use type (A)."),
                       
                       sidebarLayout(
-                        sidebarPanel(
+                        sidebarPanel( width = 3,
                           selectInput("select_from", label = h5("(A) Transform FROM:"), 
                                       choices = list("Open Water"= 11, 
                                                      "Perennial Ice/Snow" = 12, 
@@ -239,7 +244,14 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                           
                           numericInput("area_transform", label = h5("(C) Area of Transformation (ha):"), value = 0),
                           
-                          actionButton("recalculate", "Recalculate")
+                          actionButton("recalculate", "Recalculate"),
+                          tags$style("
+             .btn-action {  
+             background-color:teal; 
+             border-color: teal; 
+             }
+
+             "),
                         ), 
                         
                         mainPanel(
@@ -249,7 +261,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       
                       br(),
                       
-                      h4(strong("Download Transformation Data")),
+                      h4(span(strong("Download Transformation Data"), style="color:teal")),
                       
                       p(style="text-align: justify: font-size = 30px",
                         "Use the button below to download the land transformation chart above as a spreadsheet
@@ -266,10 +278,22 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "minty"),
                       #   This functionality would be useful to a user who, for instance, intends to produce a report
                       #   on the most effective land transformations to increase carbon storage within the mapped region."),
                       
-                      downloadButton("download", label = "Download")
+                      downloadButton("download", label = "Download"),
+             tags$style("
+             .btn-download {  
+             background-color:teal; 
+             border-color: teal; 
+             }
+
+             .progress-bar {
+             background-color: teal;
+             }
+
+             "),
+                      hr(),
                       
-               )
-                )
+               ) # end of tab 3
+                ) # end navbar 
 ) ### End of UI Block
 
 
