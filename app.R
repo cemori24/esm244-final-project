@@ -124,7 +124,7 @@ ui <- fluidPage( theme = bs_theme(bootswatch = "sandstone"),
                                     https://doi.org/10.14358/PERS.70.7.829.", br(),
                                "Hawaii State 
                                     Park Vector File: Hawaii Statewide GIS Program at
-                                    https://planning.hawaii.gov/gis/download-gis-data-expanded/.</p>")),
+                                    https://planning.hawaii.gov/gis/download-gis-data-expanded/.")),
                    
                      hr(),
                   ), #end info tab panel
