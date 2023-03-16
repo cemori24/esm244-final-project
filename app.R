@@ -244,14 +244,8 @@ ui <- fluidPage( theme = bs_theme(bootswatch = "sandstone"),
                           
                           numericInput("area_transform", label = h5("(C) Area of Transformation (ha):"), value = 0),
                           
-                          actionButton("recalculate", "Recalculate"),
-                          tags$style("
-             .btn-action {  
-             background-color:teal; 
-             border-color: teal; 
-             }
-
-             "),
+                          actionButton("recalculate", "Recalculate",
+                                       style = 'color: #fff; background-color: #076e68')
                         ), 
                         
                         mainPanel(
@@ -278,18 +272,9 @@ ui <- fluidPage( theme = bs_theme(bootswatch = "sandstone"),
                       #   This functionality would be useful to a user who, for instance, intends to produce a report
                       #   on the most effective land transformations to increase carbon storage within the mapped region."),
                       
-                      downloadButton("download", label = "Download"),
-             tags$style("
-             .btn-download {  
-             background-color:teal; 
-             border-color: teal; 
-             }
-
-             .progress-bar {
-             background-color: teal;
-             }
-
-             "),
+                      downloadButton("download", label = "Download", 
+                                     style = 'color: #fff; background-color: #076e68'),
+             
                       hr(),
                       
                ) # end of tab 3

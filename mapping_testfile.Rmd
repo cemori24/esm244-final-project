@@ -210,8 +210,19 @@ hawaii_x<- hawaii_parks_vector %>%
 
 
 ```{r}
-hawaii_df <- as.data.frame(lc_rast, xy = TRUE)
+hawaii_df <- as.data.frame(lc_rast, xy = TRUE) %>% 
+  janitor::clean_names()
+  
 ```
+
+```{r}
+ggplot(hawaii_df) +
+  geom_raster(aes(x = x, y = y, fill = land_cover_class))
+  
+```
+
+
+
 
 ### Integrating the Hawaii df (containing pixel and class data) with carbon calculation + carbon map:
 
